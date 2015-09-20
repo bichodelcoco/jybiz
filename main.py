@@ -48,6 +48,7 @@ def main():
 		Crate(_world, (randint(0, 700), randint(0, 400)))
 	ledge = Ledge(_world, ground, (800,600), 400)
 	Ledge(_world, ground, (200,200), 500)
+	Ledge(_world, ground, (500,250), 500)
 
 
 	# --------------------------------------------------------
