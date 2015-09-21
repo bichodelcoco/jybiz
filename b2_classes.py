@@ -241,7 +241,7 @@ class GameObject(pygame.sprite.Sprite):
 
 class Projectile(GameObject):
 
-	def __init__(self, world, size, startingPos,  startingImpulse, bullet=False, image0= None,lifetime = -1, density=1):
+	def __init__(self, world, size, startingPos,  startingImpulse, bullet=False, image0= None,lifetime = -1, density=1, boxShape = True):
 		self.world = world
 		self.startingPos = startingPos
 		self.size = size
@@ -249,10 +249,10 @@ class Projectile(GameObject):
 		self.lifetime= lifetime
 		self.alivetime = 0.0
 		self.image0 = image0
-
-		body = world.CreateDynamicBody(position = pygame_to_box2d(startingPos), bullet=bullet)
-		self.fixture = body.CreatePolygonFixture(box = pixel_to_meter(size), density = density, friction = 0.3, userData = self)
-		self.groups = allGroup, projectileGroup, reboundGroup
+		if boxShape :
+			self.body = world.CreateDynamicBody(position = pygame_to_box2d(startingPos), bullet=bullet)
+			self.fixture = self.body.CreatePolygonFixture(box = pixel_to_meter(size), density = density, friction = 0.3, userData = self)
+			self.groups = allGroup, projectileGroup, reboundGroup
 		GameObject.__init__(self)
 
 		self.fixture.body.ApplyLinearImpulse(pygameVec_to_box2dVec(self.impulse), self.fixture.body.worldCenter, wake = True)
