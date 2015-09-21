@@ -329,6 +329,41 @@ class Projectile_rifle(Projectile):
 		Projectile.update(self,seconds)
 
 
+class Projectile_megaBall(Projectile):
+	image0 = None
+	def __init__(self, owner, pos, power = 1000, blast_aoe = (230,230), blast_power = 10):
+		# image loading management
+		if Projectile_megaBall.image0 == None :
+			Projectile_megaBall.image0 = pygame.image.load('images/weapons/megaBall_big.png')
+			Projectile_megaBall.image0.set_colorkey(WHITE)
+		#--------------------------
+
+
+		self.owner = owner
+		self.power = power
+		self.blast_aoe=blast_aoe
+		self.blast_power=blast_power
+		vec = geo.normalizeVector(pos[0]- owner.rect.centerx, pos[1]- owner.rect.centery)
+		self.impulse = (vec[0]*power, vec[1]*power)
+		startingPos = (vec[0]*50 +owner.rect.centerx, vec[1]*50+ owner.rect.centery)
+
+		Projectile.__init__(self, self.owner.world, rifle.size, startingPos, self.impulse, image0 = Projectile_megaBall.image0,lifetime = 10, density=5000)
+
+		self.fixture.body.gravityScale = 0
+
+	def die(self):
+		area = AOE(self.rect.center, self.blast_aoe)
+		collidegroup = pygame.sprite.spritecollide(area, enemyGroup, False)
+		for item in collidegroup:
+			tempVec = geo.normalizeVector(item.rect.centerx - area.rect.centerx, item.rect.centery - area.rect.centery)
+			item.fixture.body.ApplyLinearImpulse(pygameVec_to_box2dVec((tempVec[0]*self.blast_power,tempVec[1]*self.blast_power)), item.fixture.body.worldCenter, wake = True)
+
+		Projectile.die(self)
+
+	def update(self, seconds):
+
+		Projectile.update(self,seconds)
+
 
 class Crate(GameObject):
 	image0 = pygame.image.load('images/test_crate.png')
@@ -424,7 +459,7 @@ class rifle(Weapon):
 
 		# ----------------------------------------
 		#push objects from starting point else bug
-		push_area = AOE((vec[0]*rifle.start_range,vec[1]*Grenade.start_range), (6,6))
+		push_area = AOE((vec[0]*rifle.start_range,vec[1]*megaBall.start_range), (6,6))
 		collidegroup = pygame.sprite.spritecollide(push_area, enemyGroup, False)
 
 		for item in collidegroup:
@@ -432,6 +467,30 @@ class rifle(Weapon):
 			item.fixture.body.ApplyLinearImpulse(pygameVec_to_box2dVec((tempVec[0]*self.power,tempVec[1]*self.power)), item.fixture.body.worldCenter, wake = True)
 		# -------------------------------------------
 		rifle.projectile(self.owner, pos, power=self.power)
+
+class megaBall(Weapon):
+	start_range = 20
+	projectile = Projectile_megaBall
+	size = (220,220)
+	weapon_range = 1000
+	def __init__(self, owner, power = 1000):
+		Weapon.__init__(self,owner, megaBall.weapon_range)
+		self.power = power
+
+	def activate(self, pos):
+		vec =  geo.normalizeVector(pos[0]- self.owner.rect.centerx, pos[1]- self.owner.rect.centery)
+
+		# ----------------------------------------
+		#push objects from starting point else bug
+		push_area = AOE((vec[0]*megaBall.start_range,vec[1]*megaBall.start_range), (221,221))
+		collidegroup = pygame.sprite.spritecollide(push_area, enemyGroup, False)
+
+		for item in collidegroup:
+			tempVec = geo.normalizeVector(item.rect.centerx - push_area.rect.centerx, item.rect.centery - push_area.rect.centery)
+			item.fixture.body.ApplyLinearImpulse(pygameVec_to_box2dVec((tempVec[0]*self.power,tempVec[1]*self.power)), item.fixture.body.worldCenter, wake = True)
+		# -------------------------------------------
+		megaBall.projectile(self.owner, pos, power=self.power)
+
 
 class GrapplingHook(Weapon):
 	weapon_range = 1000
@@ -529,7 +588,7 @@ class Player(GameObject):
 			Player.image0 = Player.standing
 		#--------------------------
 
-		self.weapon = rifle(self)
+		self.weapon = megaBall(self)
 
 
 		self.world = world
