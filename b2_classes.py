@@ -14,6 +14,7 @@ PPM= 20.0 # pixels per meter
 TARGET_FPS=60
 TIME_STEP=1.0/TARGET_FPS
 SCREEN_WIDTH, SCREEN_HEIGHT=1024,768
+BIGMAP_WIDTH, BIGMAP_HEIGHT=1440,900
 
 
 BLACK       = (   0,   0,   0)
@@ -38,6 +39,8 @@ class g(object):
 	TO_DESTROY = []
 	LEFT_CLICK = False
 	RIGHT_CLICK = False
+	CORNERPOINT = (0, 0)
+	OBJECTS = []
 
 # Utility functions
 # ----------------------------------------------------------
