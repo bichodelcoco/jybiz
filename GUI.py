@@ -10,29 +10,47 @@ COLOR = 3
 ''' ------------ GUI ---------- '''
 class EditorGUI(object): #contains value boxes
 	
-	def __init__(self, item = None):
-		self.slots = [0 for i in xrange(10])
-		self.posList = [()]
+	def __init__(self, world = None, ground = None, item = None):
+
+		self.world = world
+		self.ground = ground
+
+		self.slots = [0 for i in xrange(10)]
+		self.posList = []
 
 		self.loadItem(item)
 		self.displayedItem = None
 
 	def loadItem(self, item):
+		for i in xrange(10):
+			if self.slots[i]:
+				self.slots[i].kill()
 		self.slots = [0 for i in xrange(10)]
 		self.item = item
 		if className(item) == 'Ledge' :
-			self.slots[0] = PropertyBox('leftpoint', TUPLE)
-			self.slots[1] = PropertyBox('length', INT)
-			self.slots[2] = PropertyBox('width', INT)
-			self.slots[3] = PropertyBox('color', COLOR)
+			self.slots[0] = PropertyBox('width', INT)
+			self.slots[1] = PropertyBox('height', INT)
+			self.slots[2] = PropertyBox('color', TUPLE)
+			self.slots[3] = PropertyBox('allowedAngle', TUPLE)
 
 
 
-		for i in xrange(10)
+
+		for i in xrange(10):
+			if self.slots[i]:
+				self.slots[i].topleft = (SCREEN_WIDTH - 160, 100 + i*80)
+		self.displayedItem = self.item
+
+
+	def build(self, mousePos):
+		if className(item) == 'Ledge':
+			Ledge(self.world, self.ground, mousePos, width = self.slots[0].output(), height = self.slots[1].output(), color = self.slots[2].output(), allowedAngle = self.slots[3].output())				
 
 
 	def update(self):
 		if self.item != self.displayedItem:
+			self.loadItem(self.item)
+		
 
 	def run(self):
 		if self.visible :
@@ -63,17 +81,74 @@ class EditorGUI(object): #contains value boxes
 
 
 class ValueBox(pygame.sprite.Sprite):
-	#carré de x sur y blanc entouré de noir dans lequel on peut entrer des valeures
+	#carre de x sur y blanc entoure de noir dans lequel on peut entrer des valeures
 
-class PropertyBox(object):
-	# contient une TextBox et une ValueBox pour self.property
-	def __init__(name, value_type)
+	def __init__(self, leftpoint, value_type):
+		self.width = 60
+		self.height = 80
+		self.textBox = TextBox(leftpoint, width = 60, height = 80)
+		self.value_type = value_type
+		self.string = ''
+		self.value_index = 0
+		self.value_strings = ['' for i in xrange(20)]
+
+		self.groups = allGroup, hoverGroup
+		pygame.sprite.Sprite.__init__(self, self.groups)
+		self.image = pygame.Surface((60,80))
+		self.image.fill(WHITE)
+		self.image.set_colorkey(WHITE)
+		self.rect = self.image.get_rect
+		self.rect.topleft = leftpoint
+
+
+
+	def hover(self):
+		if g.INPUT != self:
+			pygame.draw.rect(self.image, BLACK, self.textBox.rect, width = 5 )
+
+	def unhover(self):
+		if g.INPUT != self:
+			pygame.draw.rect(self.image, WHITE, self.textBox.rect, width = 5 )
+
+	def click(self):
+		g.INPUT = self
+		pygame.draw.rect(self.image, RED, self.textBox.rect, width = 5 )
+	def enter(self):
+		g.INPUT = False
+
+
+	def input(self, letter):
+		self.string += letter
+		self.textBox.writeText(self.string)
+
+	def output(self):
+		if value_type == INT:
+			return int(self.string)
+
+		elif value_type == TUPLE :
+			for i in xrange(len(self.string)):
+				if self.string[i] != "," :
+					self.value_strings[self.value_index] += self.string[i]
+				else :
+					self.value_index +=1
+			self.value_index += 1
+			if self.value_index == 2 :
+				return (self.value_strings[0],self.value_strings[1])
+			if self.value_index == 3:
+				return (self.value_strings[0],self.value_strings[1], self.value_strings[2])
+
+	def kill(self):
+		self.textBox.kill()
+		pygame.sprite.Sprite.kill(self)
+
+
+
 
 
 
 class TextBox(pygame.sprite.Sprite):
 
-	def __init__(self, pos = (200,0), width = 624, height = 120, text_color = BLACK, background_color = None, text = "caca", fontSize = 32, font = None, justification = 0):
+	def __init__(self, pos = (0,0), width = 624, height = 120, text_color = BLACK, background_color = None, text = '', fontSize = 32, font = None, justification = 0):
 
 		self.groups = allGroup
 		pygame.sprite.Sprite.__init__(self, self.groups)
@@ -100,7 +175,21 @@ class TextBox(pygame.sprite.Sprite):
 			self.image.set_colorkey(WHITE)
 		self.text = text
 
-		
+class PropertyBox(object):
+	# contient une TextBox et une ValueBox pour self.property
+	def __init__(self, name, value_type, leftpoint = (0,0)):
+		self.name = name
+		self.value_type = value_type
+		self.leftpoint = leftpoint
+		self.textBox = TextBox(leftpoint, width =60, height = 80, text_color = BLACK, background_color = None, text = name, fontSize = 32, font = None, justification = 0)
+		self.valueBox = ValueBox((leftpoint[0]+80, leftpoint[1]), value_type = value_type)
+
+	def kill(self):
+		self.textBox.kill()
+		self.valueBox.kill()
+
+
+
 
 				
 

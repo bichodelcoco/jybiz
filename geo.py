@@ -6,6 +6,17 @@ import math
 def vectorLength(x, y):
     return math.sqrt(x*x + y*y)
 
+def vecLength(vec):
+	return vectorLength(vec[0], vec[1])
+
+def vecProduct(vec1,vec2):
+	return vec1[0]*vec2[0]+vec1[1]*vec2[1]
+
+def vecAngle(a,b):
+	product = vecProduct(a,b)
+
+	return math.acos(product/(vecLength(a)*vecLength(b)))
+
 def normalizeVector(x, y):
 	norm = vectorLength(x, y)
 	if norm == 0:

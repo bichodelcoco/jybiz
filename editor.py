@@ -2,6 +2,7 @@ import pygame
 from pygame.locals import *
 from b2_classes import *
 import geo
+import GUI
 
 # class Map(object)
 # 	def __init__(self, size, file):
@@ -90,8 +91,18 @@ def editor():
 	pygame.display.set_caption('Simple pygame example')
 	clock=pygame.time.Clock()
 
-	bigmap = pygame.Surface((BIGMAP_WIDTH, BIGMAP_HEIGHT))
+	bigmap = pygame.Surface((g.BIGMAP_WIDTH, g.BIGMAP_HEIGHT))
 	bigmap.fill(WHITE)
+
+	# --- pybox2d world setup -----------------------------------
+	# Create the world
+	_world = world(gravity=(0,0),doSleep=True)
+
+	# edges
+	ground= StaticObject(_world, (0, g.BIGMAP_HEIGHT - 20), (g.BIGMAP_WIDTH,15))
+	leftEdge = StaticObject(_world, (0,0), (20, g.BIGMAP_HEIGHT))
+	rightEdge = StaticObject(_world, (g.BIGMAP_WIDTH,0), (20, g.BIGMAP_HEIGHT))
+	roof = StaticObject(_world, (0,0), (g.BIGMAP_WIDTH, 20))
 
 	# ------- create background ---------------- subsurface of bigmap (what will be on the screen)
 	background = pygame.Surface(screen.get_size()) #surface the size of the screen
@@ -103,8 +114,13 @@ def editor():
 	# init
 	#---------------------------------------------------------
 	mainLoop = True
+	freeBuild = False
+	building = False
 	buildRect = BuildRect()
 	buildSprite = BuildSprite(buildRect)
+	GUI = GUI.EditorGUI(world = _world, ground = ground)
+	scrollx = 0
+	scrolly = 0
 
 
 
@@ -119,16 +135,66 @@ def editor():
 				cursor.update()
 				if g.LEFT_CLICK :
 					buildRect.mouseMotion()
+				else :
+					old_hover = hovered
+					hovered =  pygame.sprite.spritecollide(cursor, hoverGroup, False)
+					for item in old_hover not in hovered :
+						item.unhover()
+					for item in hovered :
+						item.hover()
 
 			if event.type == MOUSEBUTTONDOWN :
 				if event.button == 1:
 					g.LEFT_CLICK = True
-					buildRect.mousePos = cursor.rect.topleft[:]
+					if freeBuild :
+						buildRect.mousePos = cursor.rect.topleft[:]
+					elif building :
+						pass
 
 			elif event.type == MOUSEBUTTONUP :
 				if event.button == 1:
 					g.LEFT_CLICK = False
-					buildSprite.build()
+					if freeBuild :
+						buildSprite.build()
+					elif building :
+						GUI.item.build()
+			if event.type == KEYDOWN:
+				if g.INPUT :
+					if event.key == ENTER :
+						g.INPUT.enter()
+					else :
+						g.INPUT(chr(event.key))
+				elif event.key == 'b':
+					building = True
+
+		# -------- Scrolling  with keyboard------------------
+		
+		pressedKeys = pygame.key.get_pressed()
+		# what happens when u press an arrow to move screen
+		if pressedKeys[K_LEFT]:
+			scrollx -= g.scrollStepx
+		if pressedKeys[K_RIGHT]:
+			scrollx += g.scrollStepx
+		if pressedKeys[K_DOWN]:
+			scrolly += g.scrollStepy
+		if pressedKeys[K_UP]:
+			scrolly -= g.scrollStepy
+		# ---- scroll the screen --------
+		g.CORNERPOINT[0] += scrollx
+		g.CORNERPOINT[1] += scrolly
+		#----- prevent scrolling out of the map
+		if g.CORNERPOINT[0] < 0:
+			g.CORNERPOINT[0] = 0
+			scrollx = 0
+		if g.CORNERPOINT[0] > g.bigmapWidth - g.width :
+			g.CORNERPOINT[0] = g.bigmapWidth - g.width
+			scrollx = 0
+		if g.CORNERPOINT[1] < 0:
+			g.CORNERPOINT[1] = 0
+			scrolly = 0
+		if g.CORNERPOINT[1] > g.bigmapHeight - g.height :
+			g.CORNERPOINT[1] = g.bigmapHeight - g.height
+			scrolly =0
 					
 
 		# ---- update shit and draw allGroup ----------------
@@ -149,6 +215,16 @@ def run():
 	bigmap.fill(WHITE)
 	allGroup.empty()
 
+	# --- pybox2d world setup -----------------------------------
+	# Create the world
+	_world = world(gravity=(0,-10),doSleep=True)
+
+	# And a static body to hold the ground shape
+	ground=_world.CreateStaticBody(
+	    position=(0,0),
+	    shapes=polygonShape(box=(3000/PPM,50/PPM)),
+	    )
+
 	# ------- create background ---------------- subsurface of bigmap (what will be on the screen)
 	background = pygame.Surface(screen.get_size()) #surface the size of the screen
 	backgroundRect = background.get_rect() #create rectangle the size of background/the screen
@@ -161,6 +237,7 @@ def run():
 	mainLoop = True
 	for item in g.OBJECTS :
 		allGroup.add(item)
+
 
 
 
@@ -185,6 +262,7 @@ def run():
 				if event.button == 1:
 					g.LEFT_CLICK = False
 					buildSprite.build()
+
 					
 
 		# ---- update shit and draw allGroup ----------------

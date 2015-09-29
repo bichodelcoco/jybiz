@@ -14,7 +14,7 @@ PPM= 20.0 # pixels per meter
 TARGET_FPS=60
 TIME_STEP=1.0/TARGET_FPS
 SCREEN_WIDTH, SCREEN_HEIGHT=1024,768
-BIGMAP_WIDTH, BIGMAP_HEIGHT=1440,900
+
 
 
 BLACK       = (   0,   0,   0)
@@ -27,20 +27,26 @@ GREY        = ( 128, 128, 128)
 
 playerSprite_size = (40,62)
 
-allGroup = pygame.sprite.Group()
+allGroup = pygame.sprite.LayeredUpdates()
 enemyGroup = pygame.sprite.Group()
 projectileGroup = pygame.sprite.Group()
 terrainGroup = pygame.sprite.Group()
 ledgeGroup = pygame.sprite.Group()
 effectGroup = pygame.sprite.Group()
 reboundGroup = pygame.sprite.Group()
+hoverGroup = pygame.sprite.Group()
 
 class g(object):
 	TO_DESTROY = []
 	LEFT_CLICK = False
 	RIGHT_CLICK = False
-	CORNERPOINT = (0, 0)
+	CORNERPOINT = [0, 0]
 	OBJECTS = []
+	INPUT = False
+	scrollStepx = 3
+	scrollStepy = 3
+	BIGMAP_WIDTH=1440
+	BIGMAP_HEIGHT=900
 
 # Utility functions
 # ----------------------------------------------------------
@@ -57,6 +63,9 @@ def pygameVec_to_box2dVec(vec):
 def pixel_to_meter(pos):
 	return (pos[0]/(2*PPM), pos[1]/(2*PPM))
 
+def real_pixel_to_meter(value):
+	return value/PPM
+
 def box2d_to_pygame(pos):
 	return int(pos[0]*PPM), SCREEN_HEIGHT - int(pos[1]*PPM)
 
@@ -65,6 +74,9 @@ def radians_to_degrees(angle):
 
 def degrees_to_radians(angle):
 	return angle*math.pi/180
+
+def rect(pos):
+	return pos[0]- g.CORNERPOINT[0], pos[1] - g.CORNERPOINT[1]
 
 # Cursor
 # ----------------------------------------------------------
@@ -82,6 +94,7 @@ class Cursor(pygame.sprite.DirtySprite) :
 		m = pygame.mouse.get_pos()
 		self.rect.x = m[0]
 		self.rect.y = m[1]
+		self.pos = (self.rect.centerx + g.CORNERPOINT[0], self.rect.centery + g.CORNERPOINT[1])
 
 cursor = Cursor()
 
@@ -93,7 +106,8 @@ class AOE(pygame.sprite.DirtySprite) :
 		self.visible = 0
 		self.image.fill(WHITE)
 		self.rect = self.image.get_rect()
-		self.rect.center = pos[:]
+		self.pos = pos[:]
+		self.rect.center = rect(pos)
 
 
 
@@ -101,7 +115,7 @@ class AOE(pygame.sprite.DirtySprite) :
 
 class GameObject(pygame.sprite.Sprite):
 	'''NEEDS : Box2D object to be created(uses self.fixture in update), self.groups, self.image0 to be set '''
-	def __init__(self):
+	def __init__(self, angle = 0):
 		self.onLedge = False
 		pygame.sprite.Sprite.__init__(self, self.groups)
 		self.slowing = False
@@ -112,9 +126,12 @@ class GameObject(pygame.sprite.Sprite):
 		self.jumps = 0
 		self.jump_cooldown = 0.000001
 		self.jump_elapsedTime = 0
-
+		
 		self.oldAngle = radians_to_degrees(self.fixture.body.angle)
 		self.angle = self.oldAngle
+		# else :
+		# 	self.oldAngle = radians_to_degrees(angle)
+		# 	self.angle = self.oldAngle
 
 		self.image = pygame.transform.rotate(self.image0, self.angle).convert()
 		self.rect = self.image.get_rect()
@@ -134,9 +151,10 @@ class GameObject(pygame.sprite.Sprite):
 			self.image = pygame.transform.rotate(self.image0, self.angle)
 			self.rect = self.image.get_rect()
 			self.oldAngle= self.angle
-			self.rect.center = vec_to_coordinates(self.fixture.body.position)
+			self.pos = vec_to_coordinates(self.fixture.body.position)
+			self.rect.center = rect(vec_to_coordinates(self.fixture.body.position))
 		else :
-			self.rect.center = vec_to_coordinates(self.fixture.body.position)
+			self.pos = vec_to_coordinates(self.fixture.body.position)
 		# if self.onLedge :
 
 
@@ -159,6 +177,7 @@ class GameObject(pygame.sprite.Sprite):
 				self.fixture.body.angularVelocity=0
 				self.standing = False
 
+		self.rect.center = rect(self.pos)
 
 	def rotateLeft(self):
 		desiredVel = 50
@@ -240,19 +259,22 @@ class GameObject(pygame.sprite.Sprite):
 		pygame.sprite.Sprite.kill(self)
 
 class Projectile(GameObject):
+	''' PROJECTILE.IMAGE0 SHOLD BE HORIZONTAL FACING RIGHT'''
 
-	def __init__(self, world, size, startingPos,  startingImpulse, bullet=False, image0= None,lifetime = -1, density=1, boxShape = True):
+	def __init__(self, world, owner, size, startingPos,  startingImpulse, bullet=False, image0= None,lifetime = -1, density=1, boxShape = True, angle = 0):
 		self.world = world
+		self.owner = owner
 		self.startingPos = startingPos
 		self.size = size
 		self.startingImpulse = startingImpulse
 		self.lifetime= lifetime
 		self.alivetime = 0.0
 		self.image0 = image0
+
 		if boxShape :
 			self.body = world.CreateDynamicBody(position = pygame_to_box2d(startingPos), bullet=bullet)
 			self.fixture = self.body.CreatePolygonFixture(box = pixel_to_meter(size), density = density, friction = 0.3, userData = self)
-			self.groups = allGroup, projectileGroup, reboundGroup
+		self.groups = allGroup, projectileGroup, reboundGroup
 		GameObject.__init__(self)
 
 		self.fixture.body.ApplyLinearImpulse(pygameVec_to_box2dVec(self.impulse), self.fixture.body.worldCenter, wake = True)
@@ -278,22 +300,22 @@ class Projectile_grenade(Projectile):
 		#--------------------------
 
 
-		self.owner = owner
+		
 		self.power = power
 		self.blast_aoe = blast_aoe
 		self.blast_power = blast_power
-		vec = geo.normalizeVector(pos[0]- owner.rect.centerx, pos[1]- owner.rect.centery)
+		vec = geo.normalizeVector(pos[0]- owner.pos[0], pos[1]- owner.pos[1])
 		self.impulse = (vec[0]*power, vec[1]*power)
-		startingPos = (vec[0]*50 +owner.rect.centerx, vec[1]*50+ owner.rect.centery)
+		startingPos = (vec[0]*50 +owner.pos[0], vec[1]*50+ owner.pos[1])
 
-		Projectile.__init__(self, self.owner.world, Grenade.size, startingPos, self.impulse, image0 = Projectile_grenade.image0,lifetime = 3)
+		Projectile.__init__(self, self.owner.world,owner, Grenade.size, startingPos, self.impulse, image0 = Projectile_grenade.image0,lifetime = 3)
 
 
 	def die(self):
-		area = AOE(self.rect.center, self.blast_aoe)
+		area = AOE(self.pos, self.blast_aoe)
 		collidegroup = pygame.sprite.spritecollide(area, enemyGroup, False)
 		for item in collidegroup:
-			tempVec = geo.normalizeVector(item.rect.centerx - area.rect.centerx, item.rect.centery - area.rect.centery)
+			tempVec = geo.normalizeVector(item.pos[0]- area.pos[0], item.pos[1] - area.pos[1])
 			item.fixture.body.ApplyLinearImpulse(pygameVec_to_box2dVec((tempVec[0]*self.blast_power,tempVec[1]*self.blast_power)), item.fixture.body.worldCenter, wake = True)
 
 		Projectile.die(self)
@@ -315,13 +337,13 @@ class Projectile_rifle(Projectile):
 		#--------------------------
 
 
-		self.owner = owner
+		
 		self.power = power
-		vec = geo.normalizeVector(pos[0]- owner.rect.centerx, pos[1]- owner.rect.centery)
+		vec = geo.normalizeVector(pos[0]- owner.pos[0], pos[1]- owner.pos[1])
 		self.impulse = (vec[0]*power, vec[1]*power)
-		startingPos = (vec[0]*50 +owner.rect.centerx, vec[1]*50+ owner.rect.centery)
+		startingPos = (vec[0]*50 +owner.pos[0], vec[1]*50+ owner.pos[1])
 
-		Projectile.__init__(self, self.owner.world, rifle.size, startingPos, self.impulse, bullet=True, image0 = Projectile_rifle.image0,lifetime = 1, density=20)
+		Projectile.__init__(self, owner.world,owner, rifle.size, startingPos, self.impulse, bullet=True, image0 = Projectile_rifle.image0,lifetime = 1, density=20)
 
 
 	def update(self, seconds):
@@ -332,30 +354,32 @@ class Projectile_rifle(Projectile):
 class Projectile_megaBall(Projectile):
 	image0 = None
 	def __init__(self, owner, pos, power = 1000, blast_aoe = (230,230), blast_power = 10):
+
+
 		# image loading management
 		if Projectile_megaBall.image0 == None :
 			Projectile_megaBall.image0 = pygame.image.load('images/weapons/megaBall_big.png')
 			Projectile_megaBall.image0.set_colorkey(WHITE)
 		#--------------------------
 
-
-		self.owner = owner
+		vec = geo.normalizeVector(pos[0]- owner.pos[0], pos[1]- owner.pos[1])
+		
 		self.power = power
 		self.blast_aoe=blast_aoe
 		self.blast_power=blast_power
-		vec = geo.normalizeVector(pos[0]- owner.rect.centerx, pos[1]- owner.rect.centery)
+		
 		self.impulse = (vec[0]*power, vec[1]*power)
-		startingPos = (vec[0]*50 +owner.rect.centerx, vec[1]*50+ owner.rect.centery)
+		startingPos = (vec[0]*50 +owner.pos[0], vec[1]*50+ owner.pos[1])
 
-		Projectile.__init__(self, self.owner.world, rifle.size, startingPos, self.impulse, image0 = Projectile_megaBall.image0,lifetime = 10, density=5000)
+		Projectile.__init__(self, owner.world, owner, rifle.size, startingPos, self.impulse, image0 = Projectile_megaBall.image0,lifetime = 10, density=5000)
 
 		self.fixture.body.gravityScale = 0
 
 	def die(self):
-		area = AOE(self.rect.center, self.blast_aoe)
+		area = AOE(self.pos, self.blast_aoe)
 		collidegroup = pygame.sprite.spritecollide(area, enemyGroup, False)
 		for item in collidegroup:
-			tempVec = geo.normalizeVector(item.rect.centerx - area.rect.centerx, item.rect.centery - area.rect.centery)
+			tempVec = geo.normalizeVector(item.pos[0] - area.pos[0], item.pos[1] - area.pos[1])
 			item.fixture.body.ApplyLinearImpulse(pygameVec_to_box2dVec((tempVec[0]*self.blast_power,tempVec[1]*self.blast_power)), item.fixture.body.worldCenter, wake = True)
 
 		Projectile.die(self)
@@ -363,6 +387,47 @@ class Projectile_megaBall(Projectile):
 	def update(self, seconds):
 
 		Projectile.update(self,seconds)
+
+class Projectile_Hadouken(Projectile):
+	start_range = 70
+	image0 = None
+	size = (58,58)
+
+	def __init__(self, owner, pos, speed = 5, power = 800, recoil = 10):
+
+		vec = (pos[0]- owner.pos[0], pos[1]- owner.pos[1])
+		if vec[1] <= 0:
+			self.angle =geo.vecAngle((1,0), vec)
+		else :
+			self.angle = -geo.vecAngle((1,0), vec)
+		
+		# image loading management
+		if Projectile_Hadouken.image0 == None :
+			Projectile_Hadouken.image0= pygame.image.load('images/weapons/hadouken.png')
+			#Projectile_Hadouken.image0 = pygame.transform.rotate(Projectile_Hadouken.image0, self.angle)
+			Projectile_Hadouken.image0.set_colorkey(WHITE)
+		#--------------------------
+
+		self.power = power
+		self.speed = speed
+		self.recoil = recoil
+
+		self.world = owner.world
+		self.body = self.world.CreateDynamicBody(position = pygame_to_box2d(pos), bullet = True, angle = self.angle)
+		self.body.gravityScale = 0
+		self.fixture = self.body.CreateCircleFixture(radius = real_pixel_to_meter(29), restitution = 0.8, density = 500, friction = 0, userData = self)
+
+
+		vec = geo.normalizeVector(pos[0]- owner.pos[0], pos[1]- owner.pos[1])
+		self.impulse = (vec[0]*self.power, vec[1]* self.power)
+		startingPos = (vec[0]*self.start_range + owner.pos[0], vec[1]*self.start_range + owner.pos[1])
+
+		Projectile.__init__(self, self.world, owner, self.size, startingPos, self.impulse,bullet= True, image0 = self.image0, lifetime = 10, boxShape = False)
+
+
+
+
+
 
 
 class Crate(GameObject):
@@ -398,9 +463,10 @@ class Barrel(GameObject):
 
 
 class Weapon(object):
-	def __init__(self, owner, weapon_range):
+	def __init__(self, owner, weapon_range, cooldown = 0.0):
 		self.owner = owner
 		self.weapon_range = weapon_range
+		self.cooldown = cooldown
 
 	def deactivate(self):
 		pass
@@ -412,10 +478,10 @@ class BaseballBat(Weapon):
 		self.aoe = aoe
 
 
-	def activate(self, pos):
-		area = AOE(pos, self.aoe)
+	def activate(self, mousePos):
+		area = AOE(mousePos, self.aoe)
 		collidegroup = pygame.sprite.spritecollide(area, enemyGroup, False)
-		vec = geo.normalizeVector(pos[0]- self.owner.rect.centerx, pos[1]- self.owner.rect.centery)
+		vec = geo.normalizeVector(mousePos[0]- self.owner.rect.centerx, mousePos[1]- self.owner.rect.centery)
 		for item in collidegroup :
 			item.fixture.body.ApplyLinearImpulse(pygameVec_to_box2dVec((vec[0]*self.power,vec[1]*self.power)), item.fixture.body.worldCenter, wake = True)
 		area.kill()
@@ -432,11 +498,11 @@ class Grenade(Weapon):
 		self.blast_aoe = blast_aoe
 		self.blast_power = blast_power
 
-	def activate(self, pos): #pos = position mouse
-		vec =  geo.normalizeVector(pos[0]- self.owner.rect.centerx, pos[1]- self.owner.rect.centery)
+	def activate(self, mousePos): #pos = position mouse
+		vec =  geo.normalizeVector(mousePos[0]- self.owner.rect.centerx, mousePos[1]- self.owner.rect.centery)
 
 		# push objects from starting point else bug
-		push_area = AOE((vec[0]*Grenade.start_range,vec[1]*Grenade.start_range), (28,28))
+		push_area = AOE((self.owner.pos[0] + vec[0]*Grenade.start_range,self.owner.pos[1] + vec[1]*Grenade.start_range), (28,28))
 		collidegroup = pygame.sprite.spritecollide(push_area, enemyGroup, False)
 
 		for item in collidegroup:
@@ -454,8 +520,8 @@ class rifle(Weapon):
 		Weapon.__init__(self,owner, rifle.weapon_range)
 		self.power = power
 
-	def activate(self, pos):
-		vec =  geo.normalizeVector(pos[0]- self.owner.rect.centerx, pos[1]- self.owner.rect.centery)
+	def activate(self, mousePos):
+		vec =  geo.normalizeVector(mousePos[0]- self.owner.rect.centerx, mousePos[1]- self.owner.rect.centery)
 
 		# ----------------------------------------
 		#push objects from starting point else bug
@@ -466,6 +532,7 @@ class rifle(Weapon):
 			tempVec = geo.normalizeVector(item.rect.centerx - push_area.rect.centerx, item.rect.centery - push_area.rect.centery)
 			item.fixture.body.ApplyLinearImpulse(pygameVec_to_box2dVec((tempVec[0]*self.power,tempVec[1]*self.power)), item.fixture.body.worldCenter, wake = True)
 		# -------------------------------------------
+		pos = (self.owner.pos[0] + self.start_range*vec[0],self.owner.pos[1] + self.start_range*vec[1])
 		rifle.projectile(self.owner, pos, power=self.power)
 
 class megaBall(Weapon):
@@ -477,8 +544,8 @@ class megaBall(Weapon):
 		Weapon.__init__(self,owner, megaBall.weapon_range)
 		self.power = power
 
-	def activate(self, pos):
-		vec =  geo.normalizeVector(pos[0]- self.owner.rect.centerx, pos[1]- self.owner.rect.centery)
+	def activate(self, mousePos):
+		vec =  geo.normalizeVector(mousePos[0]- self.owner.rect.centerx, mousePos[1]- self.owner.rect.centery)
 
 		# ----------------------------------------
 		#push objects from starting point else bug
@@ -489,7 +556,35 @@ class megaBall(Weapon):
 			tempVec = geo.normalizeVector(item.rect.centerx - push_area.rect.centerx, item.rect.centery - push_area.rect.centery)
 			item.fixture.body.ApplyLinearImpulse(pygameVec_to_box2dVec((tempVec[0]*self.power,tempVec[1]*self.power)), item.fixture.body.worldCenter, wake = True)
 		# -------------------------------------------
+		pos = (self.owner.pos[0] + self.start_range*vec[0],self.owner.pos[1] + self.start_range*vec[1])
 		megaBall.projectile(self.owner, pos, power=self.power)
+
+class Hadouken(Weapon):
+	start_range = 70
+	projectile = Projectile_Hadouken
+	weapon_range = 2000
+	def __init__(self, owner, speed = 5, recoil = 10, power = 90000, cooldown = 0.0 ):
+		Weapon.__init__(self, owner, Hadouken.weapon_range)
+		self.speed = speed
+		self.recoil = recoil
+		self.power =power
+		self.cooldown = cooldown
+
+	def activate(self, mousePos):
+		vec =  geo.normalizeVector(mousePos[0]- self.owner.rect.centerx, mousePos[1]- self.owner.rect.centery)
+		# ----------------------------------------
+		# #push objects from starting point else bug
+		# push_area = AOE((self.owner.pos[0] + vec[0]*Hadouken.start_range,self.owner.pos[1] + vec[1]*Hadouken.start_range), (221,221))
+		# collidegroup = pygame.sprite.spritecollide(push_area, enemyGroup, False)
+
+		# for item in collidegroup:
+		# 	tempVec = geo.normalizeVector(item.rect.centerx - push_area.rect.centerx, item.rect.centery - push_area.rect.centery)
+		# 	item.fixture.body.ApplyLinearImpulse(pygameVec_to_box2dVec((tempVec[0]*self.power,tempVec[1]*self.power)), item.fixture.body.worldCenter, wake = True)
+		# -------------------------------------------
+		pos = (self.owner.pos[0] + self.start_range*vec[0],self.owner.pos[1] + self.start_range*vec[1])
+		self.projectile(self.owner, pos, power= self.power, speed = self.speed, recoil = self.recoil)
+
+
 
 
 class GrapplingHook(Weapon):
@@ -500,8 +595,8 @@ class GrapplingHook(Weapon):
 		Weapon.__init__(self, owner, GrapplingHook.weapon_range)
 		self.pull_power = pull_power
 
-	def activate(self, pos):
-		self.hook = Hook(self.owner, pos, self.pull_power)
+	def activate(self, mousePos):
+		self.hook = Hook(self.owner, mousePos, self.pull_power)
 
 	def deactivate(self):
 		self.hook.kill()
@@ -509,14 +604,14 @@ class GrapplingHook(Weapon):
 
 
 class Hook(pygame.sprite.Sprite):
-	def __init__(self, owner, pos, pull_power = 400, traveling_speed = 10):
+	def __init__(self, owner, mousePos, pull_power = 400, traveling_speed = 10):
 
 		self.owner = owner
-		self.pos = pos
+		self.mousePos = mousePos
 		self.pull_power = pull_power
 		self.traveling_speed = traveling_speed
 		self.latched = False
-		self.vec = geo.normalizeVector(self.pos[0] - self.owner.rect.centerx,self.pos[1] - self.owner.rect.centery)
+		self.vec = geo.normalizeVector(self.mousePos[0] - self.owner.rect.centerx,self.mousePos[1] - self.owner.rect.centery)
 
 		self.groups = allGroup, effectGroup
 		pygame.sprite.Sprite.__init__(self, self.groups)
@@ -588,7 +683,8 @@ class Player(GameObject):
 			Player.image0 = Player.standing
 		#--------------------------
 
-		self.weapon = megaBall(self)
+		self.weapon = Hadouken(self)
+		self.timeSinceShot = 0.0
 
 
 		self.world = world
@@ -610,46 +706,77 @@ class Player(GameObject):
 
 	def update(self, seconds):
 		self.jump_elapsedTime += seconds
+		self.timeSinceShot += seconds
 		self.feet.rect.topleft = self.rect.bottomleft
-		if pygame.sprite.spritecollideany(self.feet, reboundGroup, False):
-			self.jumps=0
+		self.jumps = 0
+		# if pygame.sprite.spritecollideany(self.feet, reboundGroup, False):
+		# 	self.jumps=0
 
 		GameObject.update(self, seconds)
 
 	def left_click(self, mousePos):
-		self.weapon.activate(mousePos)
+		if self.timeSinceShot >= self.weapon.cooldown :
+			self.weapon.activate(mousePos)
+			self.timeSinceShot = 0.0
 
 	def right_click(self, mousePos):
 		self.weapon.deactivate()
 
 class Ledge(GameObject):
 
-	def __init__(self, world, ground, leftpoint, length, width = 10):
+	def __init__(self, world, ground, leftpoint = (0,0), width= 200, height = 10, color = BLACK, allowedAngle = (-5,5)):
 		self.world = world
 
 		self.groups = allGroup, terrainGroup, reboundGroup
-		self.image0 = pygame.Surface((length+1,width+1))
+		self.image0 = pygame.Surface((width+1,height+1))
 		self.image0.fill(WHITE)
 		self.image0.set_colorkey(WHITE)
-		temp = pygame.Surface((length,width))
-		temp.fill(BLACK)
+		temp = pygame.Surface((width,height))
+		temp.fill(color)
 		self.image0.blit(temp, (1,1))
+
+		self.color = color
 
 
 
 		self.rect = self.image0.get_rect()
-		self.rect.topleft = leftpoint
+		self.rect.topleft = rect(leftpoint)
 		self.body = world.CreateDynamicBody(position = pygame_to_box2d(self.rect.center))
-		self.fixture = self.body.CreatePolygonFixture(box = pixel_to_meter((length,width)), density = 1, friction = 0.3, userData = self)
+		self.fixture = self.body.CreatePolygonFixture(box = pixel_to_meter((width,height)), density = 1, friction = 0.3, userData = self)
 
 		GameObject.__init__(self)
 
 		self.joint = self.world.CreateRevoluteJoint(
 			bodyA = self.body,
-			bodyB = ground,
+			bodyB = ground.body,
 			anchor = self.body.worldCenter,
 			collideConnected = True,
 			enableLimit = True,
-			lowerAngle = degrees_to_radians(-5),
-			upperAngle = degrees_to_radians(5)
+			lowerAngle =degrees_to_radians(allowedAngle[0]),
+			upperAngle = degrees_to_radians(allowedAngle[1])
 			)
+
+class StaticObject(pygame.sprite.Sprite): #used for world boundaries and the like
+
+	def __init__(self, world, leftpoint, size, color = GREY):
+		self.body = world.CreateStaticBody(
+		position=pygame_to_box2d((leftpoint[0] + size[0]/2,leftpoint[1] + size[1]/2)),
+		shapes=polygonShape(box=pixel_to_meter(size))
+		)
+
+		self.groups = allGroup, terrainGroup, reboundGroup
+		self.leftpoint = leftpoint
+
+		pygame.sprite.Sprite.__init__(self, self.groups)
+
+		self.image = pygame.Surface(size)
+		self.image.fill(color)
+		self.rect = self.image.get_rect()
+		self.rect.topleft = rect(leftpoint)
+
+	def update(self,seconds):
+
+		self.rect.topleft = rect(self.leftpoint)
+
+
+
