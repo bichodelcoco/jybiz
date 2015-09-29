@@ -72,7 +72,7 @@ def main():
 	scrollx = 0
 	scrolly = 0
 
-	weapons = [rifle(player), Hadouken(player), BaseballBat(player), GrapplingHook(player)]
+	weapons = [rifle(player), Hadouken(player), BaseballBat(player), megaBall(player),GrapplingHook(player)]
 	weapon_index = 0
 
 
