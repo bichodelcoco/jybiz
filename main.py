@@ -6,6 +6,7 @@ import Box2D
 from Box2D.b2 import * # maps b2Vec b2World to vec, world etc
 
 from b2_classes import *
+import editor
 
 
 # Constants
@@ -16,13 +17,14 @@ from b2_classes import *
 
 # Utility functions
 # ----------------------------------------------------------
+FILEPATH = 'tt.db'
 
 def pygame_to_box2d(pygame_position):
 	return pygame_position[0]/PPM,(SCREEN_HEIGHT - pygame_position[1])/PPM
 
 
 
-def main():
+def main(mapFilepath):
 
 	# Pygame set up
 	# -----------------------------------------------------------
@@ -52,14 +54,14 @@ def main():
 	roof = StaticObject(_world, (0,0), (g.BIGMAP_WIDTH, 20))
 
 	# add a crate
-
-	crate = Crate( _world,(400,400))
-	crate2 = Crate( _world,(200,400), (100,20))
-	for i in xrange(200):
-		Crate(_world, (randint(0, 700), randint(0, 400)))
-	ledge = Ledge(_world, ground, leftpoint = (800,600), width = 400)
-	Ledge(_world, ground, leftpoint = (200,200), width = 500)
-	Ledge(_world, ground, leftpoint = (500,250), width = 500)
+	editor.load(mapFilepath, _world, ground)
+	# crate = Crate( _world,(400,400))
+	# crate2 = Crate( _world,(200,400), (100,20))
+	# for i in xrange(200):
+	# 	Crate(_world, (randint(0, 700), randint(0, 400)))
+	# ledge = Ledge(_world, ground, leftpoint = (800,600), width = 400)
+	# Ledge(_world, ground, leftpoint = (200,200), width = 500)
+	# Ledge(_world, ground, leftpoint = (500,250), width = 500)
 
 
 	# --------------------------------------------------------
@@ -156,6 +158,7 @@ def main():
 		# ---- scroll the screen --------
 		g.CORNERPOINT[0] += scrollx
 		g.CORNERPOINT[1] += scrolly
+	
 		#----- prevent scrolling out of the map
 		if g.CORNERPOINT[0] < 0:
 			g.CORNERPOINT[0]=0
@@ -169,6 +172,10 @@ def main():
 		elif g.CORNERPOINT[1] > g.BIGMAP_HEIGHT - SCREEN_HEIGHT :
 			g.CORNERPOINT[1] = g.BIGMAP_HEIGHT - SCREEN_HEIGHT
 			scrolly =0
+			
+
+		scrollx = 0
+		scrolly = 0
 
 
 
@@ -180,10 +187,12 @@ def main():
 		# destroy bodies out of the time step else issues
 		for body in g.TO_DESTROY :
 			_world.DestroyBody(body)
+			g.TO_DESTROY.remove(body)
 		g.TO_DESTROY = []
 		# take a time step in box2d engine
 		_world.Step(TIME_STEP, 10, 10)
 		allGroup.draw(screen)
 		pygame.display.flip()
 
-main()
+#editor.editor()
+main(FILEPATH)

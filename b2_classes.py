@@ -24,6 +24,7 @@ RED         = ( 255,   0,   0)
 BLUE        = (   0,   0, 255)
 BRIGHTGREEN = (  50, 228,  25)
 GREY        = ( 128, 128, 128)
+BROWN       = (165,42,42)
 
 playerSprite_size = (40,62)
 
@@ -78,6 +79,22 @@ def degrees_to_radians(angle):
 def rect(pos):
 	return pos[0]- g.CORNERPOINT[0], pos[1] - g.CORNERPOINT[1]
 
+def unrect(pos):
+	return pos[0]+ g.CORNERPOINT[0], pos[1] + g.CORNERPOINT[1]
+
+def className(cls):
+	return cls.__class__.__name__
+
+def findColor(temp):
+	if temp == 1:
+		return BLACK
+	elif temp == 2:
+		return RED
+	elif temp == 3:
+		return BLUE
+	elif temp == 4:
+		return GREEN
+
 # Cursor
 # ----------------------------------------------------------
 class Cursor(pygame.sprite.DirtySprite) :
@@ -122,6 +139,7 @@ class GameObject(pygame.sprite.Sprite):
 		self.midAir = False
 		self.goingRight = False
 		self.standing = False
+		self.pos = vec_to_coordinates(self.fixture.body.position)
 		# jump management
 		self.jumps = 0
 		self.jump_cooldown = 0.000001
@@ -135,6 +153,8 @@ class GameObject(pygame.sprite.Sprite):
 
 		self.image = pygame.transform.rotate(self.image0, self.angle).convert()
 		self.rect = self.image.get_rect()
+
+		hoverGroup.add(self)
 
 	def update(self, seconds):
 
@@ -239,7 +259,12 @@ class GameObject(pygame.sprite.Sprite):
 		# 	velChange = -desiredVel - self.fixture.body.angularVelocity
 		# 	self.fixture.body.ApplyTorque(velChange*self.fixture.body.mass, wake = True)
 
-
+	def hover(self):
+		pass
+	def unhover(self):
+		pass
+	def click(self):
+		pass
 	def moveRight(self):
 		desiredVel = 15
 		velChange = desiredVel - vel.x
@@ -422,7 +447,7 @@ class Projectile_Hadouken(Projectile):
 		self.impulse = (vec[0]*self.power, vec[1]* self.power)
 		startingPos = (vec[0]*self.start_range + owner.pos[0], vec[1]*self.start_range + owner.pos[1])
 
-		Projectile.__init__(self, self.world, owner, self.size, startingPos, self.impulse,bullet= True, image0 = self.image0, lifetime = 10, boxShape = False)
+		Projectile.__init__(self, self.world, owner, self.size, startingPos, self.impulse,bullet= True, image0 = self.image0, lifetime = 1.5, boxShape = False)
 
 
 
@@ -446,8 +471,7 @@ class Crate(GameObject):
 
 
 class Barrel(GameObject):
-	image0 = pygame.Surface((70,32))
-	image0.fill(BLACK)
+	
 
 	def __init__(self,world, pos, angle = 0 ):
 		body = world.CreateDynamicBody(position = pygame_to_box2d(pos))
@@ -739,9 +763,7 @@ class Ledge(GameObject):
 
 
 
-		self.rect = self.image0.get_rect()
-		self.rect.topleft = rect(leftpoint)
-		self.body = world.CreateDynamicBody(position = pygame_to_box2d(self.rect.center))
+		self.body = world.CreateDynamicBody(position = pygame_to_box2d(leftpoint))
 		self.fixture = self.body.CreatePolygonFixture(box = pixel_to_meter((width,height)), density = 1, friction = 0.3, userData = self)
 
 		GameObject.__init__(self)
@@ -755,6 +777,31 @@ class Ledge(GameObject):
 			lowerAngle =degrees_to_radians(allowedAngle[0]),
 			upperAngle = degrees_to_radians(allowedAngle[1])
 			)
+
+	
+
+class Doodad(GameObject):
+
+	def __init__(self, world, ground, leftpoint = (0,0), width = 100, height = 100, color = BROWN, density = 1):
+		self.world = world
+
+		self.groups = allGroup, terrainGroup, reboundGroup
+		self.image0 = pygame.Surface((width+1,height+1))
+		self.image0.fill(WHITE)
+		self.image0.set_colorkey(WHITE)
+		temp = pygame.Surface((width,height))
+		temp.fill(color)
+		self.image0.blit(temp, (1,1))
+		self.color = color
+
+
+		
+		self.body = world.CreateDynamicBody(position = pygame_to_box2d(leftpoint))
+		self.fixture = self.body.CreatePolygonFixture(box = pixel_to_meter((width,height)), density = density, friction = 0.3, userData = self)
+
+
+		GameObject.__init__(self)
+
 
 class StaticObject(pygame.sprite.Sprite): #used for world boundaries and the like
 

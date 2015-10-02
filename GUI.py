@@ -5,7 +5,8 @@ import textrect
 
 INT = 1
 TUPLE = 2
-COLOR = 3
+COLOR = 2
+
 
 ''' ------------ GUI ---------- '''
 class EditorGUI(object): #contains value boxes
@@ -17,35 +18,85 @@ class EditorGUI(object): #contains value boxes
 
 		self.slots = [0 for i in xrange(10)]
 		self.posList = []
+		self.nameBox = TextBox(pos = (SCREEN_WIDTH - 130, 30), width = 100, height = 20, fontSize = 16, justification = 1)
 
 		self.loadItem(item)
 		self.displayedItem = None
+		self.itemList = []
 
 	def loadItem(self, item):
+		self.nameBox.writeText(item.__name__)
 		for i in xrange(10):
 			if self.slots[i]:
 				self.slots[i].kill()
 		self.slots = [0 for i in xrange(10)]
 		self.item = item
-		if className(item) == 'Ledge' :
+		if item.__name__ == 'Ledge' :
 			self.slots[0] = PropertyBox('width', INT)
 			self.slots[1] = PropertyBox('height', INT)
-			self.slots[2] = PropertyBox('color', TUPLE)
-			self.slots[3] = PropertyBox('allowedAngle', TUPLE)
+			self.slots[2] = PropertyBox('color', INT)
+			self.slots[3] = PropertyBox('lAngle', INT)
+			self.slots[4] = PropertyBox('uAngle', INT)
+		elif item.__name__ == 'Doodad' :
+			self.slots[0] = PropertyBox('width', INT)
+			self.slots[1] = PropertyBox('height', INT)
+			self.slots[2] = PropertyBox('color', INT)
+			self.slots[3] = PropertyBox('density', INT)
 
 
 
 
 		for i in xrange(10):
 			if self.slots[i]:
-				self.slots[i].topleft = (SCREEN_WIDTH - 160, 100 + i*80)
+				self.slots[i].leftpoint = (SCREEN_WIDTH - 160, 100 + i*40)
+				self.slots[i].update()
 		self.displayedItem = self.item
 
 
 	def build(self, mousePos):
-		if className(item) == 'Ledge':
-			Ledge(self.world, self.ground, mousePos, width = self.slots[0].output(), height = self.slots[1].output(), color = self.slots[2].output(), allowedAngle = self.slots[3].output())				
+		values = [0 for i in xrange(10)]
+		if self.item.__name__ == 'Ledge':
+			
+			for i in xrange(5):
+				temp = self.slots[i].output()
+				if temp:
+					if i == 2:
+						if temp == 1:
+							values[i] = BLACK
+						elif temp == 2:
+							values[i] = RED
+						elif temp == 3:
+							values[i] = BLUE
+					else :
+						values[i] = temp
+				#defaulft values if temp( output ) = 0
+				elif i == 0:
+					values[i] = 300
+				elif i == 1:
+					values[i] = 20
+				elif i == 2:
+					values[i]= BLACK
+				elif i==3 or i ==4:
+					values[i]= 0
+			tempItem = Ledge(self.world, self.ground, unrect(mousePos), width = values[0], height = values[1], color = values[2], allowedAngle = (-values[3],values[4]))
 
+
+		elif self.item.__name__ == 'Doodad':
+			for i in xrange(4):
+				temp = self.slots[i].output()
+				if temp:
+					if i == 2:
+						values[i] = findColor(temp)
+					else :
+						values[i] = temp
+				elif i == 0:
+					values[i] = 100
+				elif i == 1:
+					values[i] = 100
+				elif i == 2:
+					values[i]= BROWN
+			tempItem = Doodad(self.world, self.ground, unrect(mousePos), width = values[0], height = values[1], color = values[2], density = values[3])
+		self.itemList.append((self.item.__name__, tempItem.pos, values))
 
 	def update(self):
 		if self.item != self.displayedItem:
@@ -83,10 +134,10 @@ class EditorGUI(object): #contains value boxes
 class ValueBox(pygame.sprite.Sprite):
 	#carre de x sur y blanc entoure de noir dans lequel on peut entrer des valeures
 
-	def __init__(self, leftpoint, value_type):
+	def __init__(self, leftpoint, value_type, height = 20):
 		self.width = 60
-		self.height = 80
-		self.textBox = TextBox(leftpoint, width = 60, height = 80)
+		self.height = height
+		self.textBox = TextBox(pos = leftpoint, width = 100, height = self.height, fontSize = 16, background_color = BRIGHTGREEN)
 		self.value_type = value_type
 		self.string = ''
 		self.value_index = 0
@@ -94,27 +145,35 @@ class ValueBox(pygame.sprite.Sprite):
 
 		self.groups = allGroup, hoverGroup
 		pygame.sprite.Sprite.__init__(self, self.groups)
-		self.image = pygame.Surface((60,80))
+		self.image = pygame.Surface((60,self.height))
 		self.image.fill(WHITE)
 		self.image.set_colorkey(WHITE)
-		self.rect = self.image.get_rect
+		self.rect = self.image.get_rect()
 		self.rect.topleft = leftpoint
 
 
 
 	def hover(self):
-		if g.INPUT != self:
-			pygame.draw.rect(self.image, BLACK, self.textBox.rect, width = 5 )
+		print 'hover'
+		self.textBox.background_color = RED
+		# 	pygame.draw.rect(self.image, BLACK, self.textBox.rect, width = 5 )
 
 	def unhover(self):
-		if g.INPUT != self:
-			pygame.draw.rect(self.image, WHITE, self.textBox.rect, width = 5 )
+		print 'unhover'
+		self.textBox.background_color = BRIGHTGREEN
+		# if g.INPUT != self:
+		# 	pygame.draw.rect(self.image, WHITE, self.textBox.rect, width = 5 )
 
 	def click(self):
+		print 'click'
 		g.INPUT = self
-		pygame.draw.rect(self.image, RED, self.textBox.rect, width = 5 )
+
+		self.string = ''
+		self.textBox.writeText(self.string)
+		# pygame.draw.rect(self.image, RED, self.textBox.rect, width = 5 )
 	def enter(self):
 		g.INPUT = False
+
 
 
 	def input(self, letter):
@@ -122,24 +181,34 @@ class ValueBox(pygame.sprite.Sprite):
 		self.textBox.writeText(self.string)
 
 	def output(self):
-		if value_type == INT:
+		value_index = 0
+		if self.string == '':
+			return 0
+		if self.value_type == INT:
 			return int(self.string)
 
-		elif value_type == TUPLE :
+		elif self.value_type == TUPLE :
 			for i in xrange(len(self.string)):
 				if self.string[i] != "," :
-					self.value_strings[self.value_index] += self.string[i]
+					self.value_strings[value_index] += self.string[i]
 				else :
-					self.value_index +=1
-			self.value_index += 1
-			if self.value_index == 2 :
+					value_index +=1
+			value_index += 1
+			if value_index == 2 :
+				
 				return (self.value_strings[0],self.value_strings[1])
-			if self.value_index == 3:
-				return (self.value_strings[0],self.value_strings[1], self.value_strings[2])
+			if value_index == 3:
+				print (self.value_strings[0],self.value_strings[1], self.value_strings[2])
+				return (int(self.value_strings[0]),int(self.value_strings[1]), int(self.value_strings[2]))
 
 	def kill(self):
 		self.textBox.kill()
 		pygame.sprite.Sprite.kill(self)
+
+	def update(self, seconds):
+		self.textBox.rect.topleft = self.rect.topleft
+		self.textBox.refresh()
+		pygame.sprite.Sprite.update(self,seconds)
 
 
 
@@ -159,6 +228,7 @@ class TextBox(pygame.sprite.Sprite):
 		
 		self.text = text
 		self.background_color = background_color
+		self.old_color = self.background_color
 		self.text_color = text_color
 		self.justification = justification
 		self.writeText(text)
@@ -171,9 +241,16 @@ class TextBox(pygame.sprite.Sprite):
 		if self.background_color :
 			self.image = textrect.render_textrect(text, self.font, self.rect, self.text_color, self.background_color, justification = self.justification)
 		else :
-			self.image = textrect.render_textrect(text, self.font, self.rect, self.text_color, WHITE, justification = self.justification)
+			self.image = textrect.render_textrect(text, self.font, self.rect, self.text_color,WHITE, justification = self.justification)
 			self.image.set_colorkey(WHITE)
 		self.text = text
+
+	def refresh(self):
+		if self.old_color != self.background_color:
+			self.image = textrect.render_textrect(self.text, self.font, self.rect, self.text_color, self.background_color, justification = self.justification)
+			self.old_color = self.background_color
+
+
 
 class PropertyBox(object):
 	# contient une TextBox et une ValueBox pour self.property
@@ -181,12 +258,20 @@ class PropertyBox(object):
 		self.name = name
 		self.value_type = value_type
 		self.leftpoint = leftpoint
-		self.textBox = TextBox(leftpoint, width =60, height = 80, text_color = BLACK, background_color = None, text = name, fontSize = 32, font = None, justification = 0)
+		self.textBox = TextBox(leftpoint, width =60, height = 80, text_color = BLACK, background_color = None, text = name, fontSize = 16, font = None, justification = 0)
 		self.valueBox = ValueBox((leftpoint[0]+80, leftpoint[1]), value_type = value_type)
 
 	def kill(self):
 		self.textBox.kill()
 		self.valueBox.kill()
+
+	def update(self):
+		self.textBox.rect.topleft = self.leftpoint
+		self.valueBox.rect.topleft = (self.leftpoint[0]+80, self.leftpoint[1])
+
+	def output(self):
+		return self.valueBox.output()
+
 
 
 

@@ -3,7 +3,9 @@ from pygame.locals import *
 from b2_classes import *
 import geo
 import GUI
+import shelve
 
+FILEPATH = 'tt.db'
 # class Map(object)
 # 	def __init__(self, size, file):
 # 		self.grid = [[0 for i in xrange(size[0])] for i in xrange(size[1])
@@ -78,10 +80,21 @@ class BuildSprite(pygame.sprite.Sprite):
 		self.image.fill(BLUE)
 		self.image.set_alpha(100)
 
-	def build(self):
+class Blueprint(pygame.sprite.Sprite):
+	def __init__(self, size):
 
+		self.groups = allGroup
 		
-		g.OBJECTS.append(testItem(self.rect.topleft, self.rect.size))
+		pygame.sprite.Sprite.__init__(self, self.groups)
+
+		self.image = pygame.Surface(size)
+		self.image.fill(BLUE)
+		self.image.set_alpha(100)
+		self.rect = self.image.get_rect()
+
+	def update(self, seconds):
+		self.rect.center = cursor.rect.topleft
+
 
 
 def editor():
@@ -90,6 +103,7 @@ def editor():
 	screen=pygame.display.set_mode((SCREEN_WIDTH,SCREEN_HEIGHT), 0, 32)
 	pygame.display.set_caption('Simple pygame example')
 	clock=pygame.time.Clock()
+	pygame.font.init()
 
 	bigmap = pygame.Surface((g.BIGMAP_WIDTH, g.BIGMAP_HEIGHT))
 	bigmap.fill(WHITE)
@@ -116,11 +130,19 @@ def editor():
 	mainLoop = True
 	freeBuild = False
 	building = False
-	buildRect = BuildRect()
-	buildSprite = BuildSprite(buildRect)
-	GUI = GUI.EditorGUI(world = _world, ground = ground)
+	deleteMode = False
+	modeList = [freeBuild, building, deleteMode]
+	# buildRect = BuildRect()
+	# buildSprite = BuildSprite(buildRect)
+	itemList = [Ledge, Doodad]
+	itemList_index = 0
+	gui = GUI.EditorGUI(world = _world, ground = ground, item = Ledge)
 	scrollx = 0
 	scrolly = 0
+	hovered =  pygame.sprite.spritecollide(cursor, hoverGroup, False)
+	infoBox = GUI.TextBox(pos = (0, SCREEN_HEIGHT -20), width = 300, height = 20, fontSize = 16)
+	infoString = ''
+	blueprint = Blueprint((1,1))
 
 
 
@@ -133,12 +155,13 @@ def editor():
 
 			if event.type == MOUSEMOTION :
 				cursor.update()
-				if g.LEFT_CLICK :
-					buildRect.mouseMotion()
-				else :
+				# if g.LEFT_CLICK :
+				# 	# buildRect.mouseMotion()
+				if True :
 					old_hover = hovered
 					hovered =  pygame.sprite.spritecollide(cursor, hoverGroup, False)
-					for item in old_hover not in hovered :
+					temp = [item for item in old_hover if item not in hovered]
+					for item in temp :
 						item.unhover()
 					for item in hovered :
 						item.hover()
@@ -146,29 +169,57 @@ def editor():
 			if event.type == MOUSEBUTTONDOWN :
 				if event.button == 1:
 					g.LEFT_CLICK = True
-					if freeBuild :
-						buildRect.mousePos = cursor.rect.topleft[:]
-					elif building :
-						pass
+					# if freeBuild :
+					# 	buildRect.mousePos = cursor.rect.topleft[:]
+					
+					if True :
+						if hovered:
+							hovered[0].click()
 
 			elif event.type == MOUSEBUTTONUP :
 				if event.button == 1:
 					g.LEFT_CLICK = False
-					if freeBuild :
-						buildSprite.build()
-					elif building :
-						GUI.item.build()
+					# if freeBuild :
+					# 	buildSprite.build()
+					if building :
+						gui.build(cursor.rect.topleft)
+					elif deleteMode:
+						if hovered:
+							if terrainGroup in hovered[0].groups:
+								hovered[0].kill()
 			if event.type == KEYDOWN:
 				if g.INPUT :
-					if event.key == ENTER :
+					if event.key == K_RETURN :
 						g.INPUT.enter()
-					else :
-						g.INPUT(chr(event.key))
-				elif event.key == 'b':
-					building = True
+					elif event.key < 257:
+						g.INPUT.input(chr(event.key))
+				elif event.key == K_b: #switch from and to building mode
+					building = not building
+					blueprint.kill()
+					if building :
+						blueprint = Blueprint((gui.slots[0].output(), gui.slots[1].output()))
+
+
+				elif event.key == K_c: #cycle through buildable items
+					itemList_index = (itemList_index + 1)%len(itemList)
+					gui.loadItem(itemList[itemList_index])
+				elif event.key == K_x : #delete mode
+					deleteMode = not deleteMode
+
+		#update infoBox with the stuff
+		infoString = ''
+		if g.INPUT:
+			infoString += '- input ENTER '
+		if building:
+			infoString += '- building B '
+		if deleteMode:
+			infoString += '- deleteMode X '
+		if freeBuild:
+			infoString += ' freeBuild'
+		infoBox.writeText(infoString)
 
 		# -------- Scrolling  with keyboard------------------
-		
+
 		pressedKeys = pygame.key.get_pressed()
 		# what happens when u press an arrow to move screen
 		if pressedKeys[K_LEFT]:
@@ -184,17 +235,19 @@ def editor():
 		g.CORNERPOINT[1] += scrolly
 		#----- prevent scrolling out of the map
 		if g.CORNERPOINT[0] < 0:
-			g.CORNERPOINT[0] = 0
+			g.CORNERPOINT[0]=0
 			scrollx = 0
-		if g.CORNERPOINT[0] > g.bigmapWidth - g.width :
-			g.CORNERPOINT[0] = g.bigmapWidth - g.width
+		elif g.CORNERPOINT[0] > g.BIGMAP_WIDTH - SCREEN_WIDTH :
+			g.CORNERPOINT[0] = g.BIGMAP_WIDTH - SCREEN_WIDTH
 			scrollx = 0
 		if g.CORNERPOINT[1] < 0:
 			g.CORNERPOINT[1] = 0
 			scrolly = 0
-		if g.CORNERPOINT[1] > g.bigmapHeight - g.height :
-			g.CORNERPOINT[1] = g.bigmapHeight - g.height
+		elif g.CORNERPOINT[1] > g.BIGMAP_HEIGHT - SCREEN_HEIGHT :
+			g.CORNERPOINT[1] = g.BIGMAP_HEIGHT - SCREEN_HEIGHT
 			scrolly =0
+		scrollx = 0
+		scrolly = 0
 					
 
 		# ---- update shit and draw allGroup ----------------
@@ -204,76 +257,48 @@ def editor():
 		allGroup.draw(screen)
 		pygame.display.flip()
 
-def run():
-	# Pygame set up
-	# -----------------------------------------------------------
-	screen=pygame.display.set_mode((SCREEN_WIDTH,SCREEN_HEIGHT), 0, 32)
-	pygame.display.set_caption('Simple pygame example')
-	clock=pygame.time.Clock()
+	save(FILEPATH, gui.itemList)
+	for item in allGroup:
+		item.kill()
+	temp = []
+	for body in _world:
+		temp.append(body)
+	for body in temp:
+		_world.DestroyBody(body)
+		temp.remove(body)
 
-	bigmap = pygame.Surface((BIGMAP_WIDTH, BIGMAP_HEIGHT))
-	bigmap.fill(WHITE)
-	allGroup.empty()
+def save(filepath, itemList):
+	f = shelve.DbfilenameShelf(filepath, flag='c', protocol=None, writeback=False)
+	f['itemNumber'] = len(itemList)
+	index =0
+	for item in itemList:
+		f[str(index)]= item
+		index += 1
+	f.close()
 
-	# --- pybox2d world setup -----------------------------------
-	# Create the world
-	_world = world(gravity=(0,-10),doSleep=True)
-
-	# And a static body to hold the ground shape
-	ground=_world.CreateStaticBody(
-	    position=(0,0),
-	    shapes=polygonShape(box=(3000/PPM,50/PPM)),
-	    )
-
-	# ------- create background ---------------- subsurface of bigmap (what will be on the screen)
-	background = pygame.Surface(screen.get_size()) #surface the size of the screen
-	backgroundRect = background.get_rect() #create rectangle the size of background/the screen
-	background = bigmap.subsurface((g.CORNERPOINT[0], g.CORNERPOINT[1], SCREEN_WIDTH, SCREEN_HEIGHT)) #take snapshot of bigmap
-	background = background.convert()
-
-
-	# init
-	#---------------------------------------------------------
-	mainLoop = True
-	for item in g.OBJECTS :
-		allGroup.add(item)
+def load(filepath, world, ground):
+	f = shelve.DbfilenameShelf(filepath, flag='r', protocol=None, writeback=False)
+	itemList =[]
+	itemNumber =f['itemNumber']
+	for i in xrange(itemNumber):
+		itemList.append(f[str(i)])
 
 
 
+	for i in xrange(itemNumber):
+		item = itemList[i]
+		values = item[2]
+		pos = item[1]
+		name = item[0]
+		
+		if name == 'Ledge':
+			Ledge(world, ground, pos, width = values[0], height = values[1], color = values[2], allowedAngle = (-values[3],values[4]))
+		elif name == 'Doodad':
+			Doodad(world, ground, pos, width = values[0], height = values[1], color = values[2], density = values[3])
+	f.close()
 
-	while mainLoop :
-		seconds = clock.tick(TARGET_FPS) /1000.0
 
-		for event in pygame.event.get():
-			if event.type==QUIT or (event.type==KEYDOWN and event.key==K_ESCAPE):
-				mainLoop = False
 
-			if event.type == MOUSEMOTION :
-				cursor.update()
-				if g.LEFT_CLICK :
-					buildRect.mouseMotion()
-
-			if event.type == MOUSEBUTTONDOWN :
-				if event.button == 1:
-					g.LEFT_CLICK = True
-					buildRect.mousePos = cursor.rect.topleft[:]
-
-			elif event.type == MOUSEBUTTONUP :
-				if event.button == 1:
-					g.LEFT_CLICK = False
-					buildSprite.build()
-
-					
-
-		# ---- update shit and draw allGroup ----------------
-		background = bigmap.subsurface((g.CORNERPOINT[0], g.CORNERPOINT[1], SCREEN_WIDTH, SCREEN_HEIGHT))
-		screen.blit(background, (0,0))
-		allGroup.update(seconds)
-		allGroup.draw(screen)
-		pygame.display.flip()
-
-editor()
-run()
 
 
 
