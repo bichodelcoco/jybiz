@@ -26,7 +26,6 @@ BRIGHTGREEN = (  50, 228,  25)
 GREY        = ( 128, 128, 128)
 BROWN       = (165,42,42)
 
-playerSprite_size = (40,62)
 
 allGroup = pygame.sprite.LayeredUpdates()
 enemyGroup = pygame.sprite.Group()
@@ -115,6 +114,8 @@ class Cursor(pygame.sprite.DirtySprite) :
 
 cursor = Cursor()
 
+# Area Of Effect Sprite
+# --------------------------------------------------------
 class AOE(pygame.sprite.DirtySprite) :
 	''' REMEMBER TO KILL THOSE AFTER USING '''
 	def __init__(self, pos, aoe) :
@@ -129,27 +130,20 @@ class AOE(pygame.sprite.DirtySprite) :
 
 
 
+# GameObject
+# ----------------------------------------------------------
+''' a gameobject is a sprite linked to a box2d.body'''
 
 class GameObject(pygame.sprite.Sprite):
 	'''NEEDS : Box2D object to be created(uses self.fixture in update), self.groups, self.image0 to be set '''
-	def __init__(self, angle = 0):
-		self.onLedge = False
+	def __init__(self):
+
 		pygame.sprite.Sprite.__init__(self, self.groups)
-		self.slowing = False
-		self.midAir = False
-		self.goingRight = False
-		self.standing = False
 		self.pos = vec_to_coordinates(self.fixture.body.position)
-		# jump management
-		self.jumps = 0
-		self.jump_cooldown = 0.000001
-		self.jump_elapsedTime = 0
 		
 		self.oldAngle = radians_to_degrees(self.fixture.body.angle)
 		self.angle = self.oldAngle
-		# else :
-		# 	self.oldAngle = radians_to_degrees(angle)
-		# 	self.angle = self.oldAngle
+
 
 		self.image = pygame.transform.rotate(self.image0, self.angle).convert()
 		self.rect = self.image.get_rect()
@@ -160,12 +154,6 @@ class GameObject(pygame.sprite.Sprite):
 
 		self.velocity = self.fixture.body.linearVelocity
 
-		#check if mid air
-		self.jumps = 0
-		if self.velocity.x >= 0 :
-			self.goingRight = True
-		else :
-			self.goingRight = False
 		self.angle = radians_to_degrees(self.fixture.body.angle)
 		if self.angle != self.oldAngle :
 			self.image = pygame.transform.rotate(self.image0, self.angle)
@@ -175,28 +163,8 @@ class GameObject(pygame.sprite.Sprite):
 			self.rect.center = rect(vec_to_coordinates(self.fixture.body.position))
 		else :
 			self.pos = vec_to_coordinates(self.fixture.body.position)
-		# if self.onLedge :
-
-
-		# 	if self.velocity.y < 0:
-		# 		self.fixture.body.ApplyLinearImpulse((0, -1.3*self.velocity.y*self.fixture.body.mass), self.fixture.body.worldCenter, wake = True)
-		# 	else :
-		# 		#EXPERMINTAL
-		# 		self.fixture.body.gravityScale = 0
-		# 		#self.fixture.body.ApplyForce((0,0.01*10*self.fixture.body.mass), self.fixture.body.worldCenter, wake = True)
-		# else :
-		# 	if self.fixture.body.gravityScale == 0 :
-		# 		self.fixture.body.gravityScale = 1
-		if self.slowing :
-			if self.midAir :
-				self.slow()
-		if self.standing :
-			if (1>self.angle or self.angle>359):
-				print 'yipee'
-				#self.fixture.body.ApplyTorque(-200*self.fixture.body.mass, wake=True)
-				self.fixture.body.angularVelocity=0
-				self.standing = False
-
+		
+		
 		self.rect.center = rect(self.pos)
 
 	def rotateLeft(self):
@@ -212,36 +180,8 @@ class GameObject(pygame.sprite.Sprite):
 		self.fixture.body.ApplyTorque(torque, wake = True)
 
 
-	def slow(self):
-
-		self.fixture.body.ApplyForce((0,-500), self.fixture.body.worldCenter, wake = True)
 
 
-	def goRight(self):
-		vel = self.fixture.body.linearVelocity
-		desiredVel = 15
-		velChange = desiredVel - vel.x
-		impulse = self.fixture.body.mass * velChange
-		self.fixture.body.ApplyLinearImpulse((impulse,0), self.fixture.body.worldCenter, wake = True)
-
-
-	def goLeft(self):
-		vel = self.fixture.body.linearVelocity
-		desiredVel = -15
-		velChange = desiredVel - vel.x
-		impulse = self.fixture.body.mass * velChange
-		self.fixture.body.ApplyLinearImpulse((impulse,0), self.fixture.body.worldCenter, wake = True)
-
-
-	def jump(self):
-		if self.jumps == 0 :
-
-			self.fixture.body.ApplyLinearImpulse((0,9*self.fixture.body.mass), self.fixture.body.worldCenter, wake = True)
-			self.jumps += 1
-
-		elif self.jumps == 1 :
-			self.fixture.body.ApplyLinearImpulse((0,15*self.fixture.body.mass), self.fixture.body.worldCenter, wake = True)
-			self.jumps += 1
 
 
 
@@ -460,8 +400,8 @@ class Crate(GameObject):
 	image0.set_colorkey(WHITE)
 
 	def __init__(self,world, pos, angle = 0 ):
-		body = world.CreateDynamicBody(position = pygame_to_box2d(pos))
-		self.fixture = body.CreatePolygonFixture(box = pixel_to_meter((32,32)), density = 1, friction = 0.3, userData = self)
+		self.body = world.CreateDynamicBody(position = pygame_to_box2d(pos))
+		self.fixture = self.body.CreatePolygonFixture(box = pixel_to_meter((32,32)), density = 1, friction = 0.3, userData = self)
 		self.groups = allGroup, enemyGroup, reboundGroup
 		GameObject.__init__(self)
 
@@ -474,8 +414,8 @@ class Barrel(GameObject):
 	
 
 	def __init__(self,world, pos, angle = 0 ):
-		body = world.CreateDynamicBody(position = pygame_to_box2d(pos))
-		self.fixture = body.CreatePolygonFixture(box = pixel_to_meter((70,32)), density = 1, friction = 0.3, userData = self)
+		self.body = world.CreateDynamicBody(position = pygame_to_box2d(pos))
+		self.fixture = self.body.CreatePolygonFixture(box = pixel_to_meter((70,32)), density = 1, friction = 0.3, userData = self)
 		self.groups = allGroup, enemyGroup, reboundGroup
 		GameObject.__init__(self)
 
@@ -694,58 +634,6 @@ class Hook(pygame.sprite.Sprite):
 # 		self.image = pygame.transform.rotate(self.image0, self.angle).convert()
 # 		self.rect = self.image.get_rect()
 
-class Player(GameObject):
-	spritesheet = None
-	standing = None
-	spritesize = (40,64)
-	image0 = None
-	def __init__(self, world, pos):
-		# image loading management
-		if Player.standing == None :
-			Player.spritesheet = spritesheet.Spritesheet('images/dog.png')
-			Player.standing  = Player.spritesheet.getImage((101,45, Player.spritesize), -1)
-			Player.image0 = Player.standing
-		#--------------------------
-
-		self.weapon = Hadouken(self)
-		self.timeSinceShot = 0.0
-
-
-		self.world = world
-		body = world.CreateDynamicBody(position = pygame_to_box2d(pos), fixedRotation = False, angularDamping=0.5)
-		self.fixture = body.CreatePolygonFixture(box = pixel_to_meter(Player.spritesize), density = 1, friction = 0.3, userData = self)
-
-
-
-
-		self.groups = allGroup
-		GameObject.__init__(self)
-
-
-
-
-		# ledge management
-		self.feet = pygame.sprite.Sprite()
-		self.feet.rect = pygame.Rect(self.rect.left, self.rect.bottom, self.rect.width, 2)
-
-	def update(self, seconds):
-		self.jump_elapsedTime += seconds
-		self.timeSinceShot += seconds
-		self.feet.rect.topleft = self.rect.bottomleft
-		self.jumps = 0
-		# if pygame.sprite.spritecollideany(self.feet, reboundGroup, False):
-		# 	self.jumps=0
-
-		GameObject.update(self, seconds)
-
-	def left_click(self, mousePos):
-		if self.timeSinceShot >= self.weapon.cooldown :
-			self.weapon.activate(mousePos)
-			self.timeSinceShot = 0.0
-
-	def right_click(self, mousePos):
-		self.weapon.deactivate()
-
 class Ledge(GameObject):
 
 	def __init__(self, world, ground, leftpoint = (0,0), width= 200, height = 10, color = BLACK, allowedAngle = (-5,5)):
@@ -786,7 +674,7 @@ class Doodad(GameObject):
 		self.world = world
 
 		self.groups = allGroup, terrainGroup, reboundGroup
-		self.image0 = pygame.Surface((width+1,height+1))
+		self.image0 = pygame.Surface((width,height))
 		self.image0.fill(WHITE)
 		self.image0.set_colorkey(WHITE)
 		temp = pygame.Surface((width,height))
@@ -796,7 +684,7 @@ class Doodad(GameObject):
 
 
 		
-		self.body = world.CreateDynamicBody(position = pygame_to_box2d(leftpoint))
+		self.body = world.CreateDynamicBody(position = pygame_to_box2d(leftpoint), angle = math.pi/4.0)
 		self.fixture = self.body.CreatePolygonFixture(box = pixel_to_meter((width,height)), density = density, friction = 0.3, userData = self)
 
 

@@ -6,6 +6,7 @@ import Box2D
 from Box2D.b2 import * # maps b2Vec b2World to vec, world etc
 
 from b2_classes import *
+from b2_units import *
 import editor
 
 
@@ -68,9 +69,6 @@ def main(mapFilepath):
 	# --- Game setup -----------------------------------------
 	mainLoop = True
 	player = Player(_world, (200,200))
-	goingRight = False
-	goingLeft = False
-	frames = 0
 	scrollx = 0
 	scrolly = 0
 
@@ -91,21 +89,21 @@ def main(mapFilepath):
 
 			elif event.type == KEYDOWN :
 				if event.key == K_d :
-					goingRight = True
-				elif event.key == K_q :
-					goingLeft = True
+					player.goRight()
+				elif event.key == K_a :
+					player.goLeft()
 				if event.key == K_SPACE :
 					player.jump()
 				elif event.key == K_s :
-					player.slowing = True
-				elif event.key == K_z :
-					player.stand()
+					player.ground()
+				# elif event.key == K_z :
+				# 	player.stand()
 
 			elif event.type == KEYUP:
 				if event.key == K_d :
-					goingRight = False
-				elif event.key == K_q :
-					goingLeft = False
+					player.stop()
+				elif event.key == K_a :
+					player.stop()
 				elif event.key == K_s :
 					player.slowing = False
 				elif event.key == K_x :
@@ -136,11 +134,8 @@ def main(mapFilepath):
 		# 	player.onLedge = False
 
 
-		if goingRight :
-			player.goRight()
-
-		elif goingLeft :
-			player.goLeft()
+	
+			
 
 
 		# -------- Scrolling  with keyboard------------------
@@ -194,5 +189,5 @@ def main(mapFilepath):
 		allGroup.draw(screen)
 		pygame.display.flip()
 
-#editor.editor()
+editor.editor()
 main(FILEPATH)

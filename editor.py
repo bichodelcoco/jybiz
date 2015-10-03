@@ -187,6 +187,10 @@ def editor():
 						if hovered:
 							if terrainGroup in hovered[0].groups:
 								hovered[0].kill()
+								for values in gui.itemList:
+									if values[0] == hovered[0]:
+										gui.itemList.remove(values)
+
 			if event.type == KEYDOWN:
 				if g.INPUT :
 					if event.key == K_RETURN :
@@ -257,7 +261,11 @@ def editor():
 		allGroup.draw(screen)
 		pygame.display.flip()
 
-	save(FILEPATH, gui.itemList)
+	tempList = []
+	for item in gui.itemList:
+		tempList.append((item[1],item[2],item[3]))
+	save(FILEPATH, tempList)
+
 	for item in allGroup:
 		item.kill()
 	temp = []
@@ -295,6 +303,7 @@ def load(filepath, world, ground):
 			Ledge(world, ground, pos, width = values[0], height = values[1], color = values[2], allowedAngle = (-values[3],values[4]))
 		elif name == 'Doodad':
 			Doodad(world, ground, pos, width = values[0], height = values[1], color = values[2], density = values[3])
+	
 	f.close()
 
 

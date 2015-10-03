@@ -96,7 +96,7 @@ class EditorGUI(object): #contains value boxes
 				elif i == 2:
 					values[i]= BROWN
 			tempItem = Doodad(self.world, self.ground, unrect(mousePos), width = values[0], height = values[1], color = values[2], density = values[3])
-		self.itemList.append((self.item.__name__, tempItem.pos, values))
+		self.itemList.append((tempItem,self.item.__name__, tempItem.pos, values))
 
 	def update(self):
 		if self.item != self.displayedItem:
