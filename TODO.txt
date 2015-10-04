@@ -1,0 +1,30 @@
+TODO
+----------------------------------
+(si t'as la foi :)
+hésite pas a ajouter des trucs a cette liste toi meme
+
+FAIT UN PEU DU 7. et 8. QUAND TA LA NON FLEMME PCQ C CHIANT
+
+
+1. Meilleur formatting des modules classes ( plus clair, mieux voir les relations de dependances, les objets similaires etc)
+2. Meilleure gestion des limites du monde (pour l'instant c'est assez manuel et faut changer des que la taille de BIGMAP varie)
+3. améliorer éditeur :
+	meilleure gestion de l'input
+	eliminer les critical errors (crash si tente de build alors que les values dans les box ne sont pas du bon type, ...)
+	implémenter tous les objets possible a construire
+	implementer monster spawn
+	implémenter freeBuild
+	implémenter Drag after build
+4. trouver un bon sprite temporaire (ou définitif) pour le player pour pouvoir mieux test le gameplay
+5. trouver idées :
+	armes
+	ennemis
+	objets terrains
+	missions
+6. tester et raffiner
+	le jump( priorité, il est trop petit)
+	toutes les armes (mais attendre d'avoir des meilleurs ennemis)
+
+7. éditer les images de zombie, golem ( si on les utilise), player pour pouvoir test les ennemis et le gameplay
+	voir vampire pour les edit qu'il faut faire
+8. Trouver et formatter des images de tout (projectile, monstres, terrain....) (OU SINON TU LES DESSINES GOOD LUCK HAVE FUN)

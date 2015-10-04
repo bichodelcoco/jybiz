@@ -34,7 +34,7 @@ def main(mapFilepath):
 	clock=pygame.time.Clock()
 	seed()
 
-	bigmap = pygame.Surface((g.BIGMAP_WIDTH, g.BIGMAP_HEIGHT))
+	bigmap = pygame.Surface((g.BIGMAP_WIDTH+SCREEN_WIDTH, g.BIGMAP_HEIGHT+SCREEN_HEIGHT))
 	bigmap.fill(WHITE)
 		# ------- create background ---------------- subsurface of bigmap (what will be on the screen)
 	background = pygame.Surface(screen.get_size()) #surface the size of the screen
@@ -56,6 +56,7 @@ def main(mapFilepath):
 
 	# add a crate
 	editor.load(mapFilepath, _world, ground)
+	
 	# crate = Crate( _world,(400,400))
 	# crate2 = Crate( _world,(200,400), (100,20))
 	# for i in xrange(200):
@@ -68,12 +69,14 @@ def main(mapFilepath):
 	# --------------------------------------------------------
 	# --- Game setup -----------------------------------------
 	mainLoop = True
-	player = Player(_world, (200,200))
+	player = Player(_world, (600,400))
+	vampire1 = Vampire(_world, (800, 400), target = player)
 	scrollx = 0
 	scrolly = 0
 
-	weapons = [rifle(player), Hadouken(player), BaseballBat(player), megaBall(player),GrapplingHook(player)]
+	weapons = [Rifle(player), Hadouken(player), BaseballBat(player), megaBall(player),GrapplingHook(player)]
 	weapon_index = 0
+	player.weapon = weapons[0]
 
 
 
@@ -89,9 +92,11 @@ def main(mapFilepath):
 
 			elif event.type == KEYDOWN :
 				if event.key == K_d :
-					player.goRight()
+					g.K_RIGHT = True
+				
 				elif event.key == K_a :
-					player.goLeft()
+					g.K_LEFT = True
+					
 				if event.key == K_SPACE :
 					player.jump()
 				elif event.key == K_s :
@@ -101,9 +106,13 @@ def main(mapFilepath):
 
 			elif event.type == KEYUP:
 				if event.key == K_d :
-					player.stop()
+					g.K_RIGHT = False
+					#player.stop()
+					player.go(0,player.accel)
 				elif event.key == K_a :
-					player.stop()
+					g.K_LEFT = False
+					#player.stop()
+					player.go(0,player.accel)
 				elif event.key == K_s :
 					player.slowing = False
 				elif event.key == K_x :
@@ -127,6 +136,10 @@ def main(mapFilepath):
 				if event.button == 1:
 					g.LEFT_CLICK = False
 					player.weapon.deactivate()
+		if g.K_RIGHT :
+			player.goRight()
+		if g.K_LEFT:
+			player.goLeft()
 
 		# if pygame.sprite.spritecollideany(player.feet, ledgeGroup):
 		# 	player.onLedge = True
@@ -167,7 +180,9 @@ def main(mapFilepath):
 		elif g.CORNERPOINT[1] > g.BIGMAP_HEIGHT - SCREEN_HEIGHT :
 			g.CORNERPOINT[1] = g.BIGMAP_HEIGHT - SCREEN_HEIGHT
 			scrolly =0
-			
+		# making sure charcater is in middle of screen
+		g.CORNERPOINT[0] = geo.maximum(player.pos[0] - SCREEN_WIDTH/2, 0)
+		g.CORNERPOINT[1] = geo.maximum(player.pos[1] - SCREEN_HEIGHT/2, 0)
 
 		scrollx = 0
 		scrolly = 0

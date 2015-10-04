@@ -28,6 +28,10 @@ def distance(a,b):
 	s1 = (b[0]-a[0])*(b[0]-a[0])
 	s2 = (b[1]-a[1])*(b[1]-a[1])
 	return math.sqrt(s1 + s2)
+
+def distance_oneDim(a,b):
+	return abs(a-b)
+
 	
 #def write(msg, color):
 
@@ -38,3 +42,5 @@ def diagonalDistance(a,b) : #Movement cost D = 10, diagonal 14 (aprrox sqrt(2)*D
 
 def absolute(a):
 	return abs(a)
+def maximum(a,b):
+	return max(a,b)

@@ -35,6 +35,7 @@ ledgeGroup = pygame.sprite.Group()
 effectGroup = pygame.sprite.Group()
 reboundGroup = pygame.sprite.Group()
 hoverGroup = pygame.sprite.Group()
+unitGroup = pygame.sprite.Group()
 
 class g(object):
 	TO_DESTROY = []
@@ -47,6 +48,10 @@ class g(object):
 	scrollStepy = 3
 	BIGMAP_WIDTH=1440
 	BIGMAP_HEIGHT=900
+
+	#keys
+	K_RIGHT = False
+	K_LEFT = False
 
 # Utility functions
 # ----------------------------------------------------------
@@ -143,6 +148,7 @@ class GameObject(pygame.sprite.Sprite):
 		
 		self.oldAngle = radians_to_degrees(self.fixture.body.angle)
 		self.angle = self.oldAngle
+		self.vel = self.fixture.body.linearVelocity
 
 
 		self.image = pygame.transform.rotate(self.image0, self.angle).convert()
@@ -152,7 +158,7 @@ class GameObject(pygame.sprite.Sprite):
 
 	def update(self, seconds):
 
-		self.velocity = self.fixture.body.linearVelocity
+		self.vel = self.fixture.body.linearVelocity
 
 		self.angle = radians_to_degrees(self.fixture.body.angle)
 		if self.angle != self.oldAngle :
@@ -273,12 +279,12 @@ class Projectile_grenade(Projectile):
 		self.impulse = (vec[0]*power, vec[1]*power)
 		startingPos = (vec[0]*50 +owner.pos[0], vec[1]*50+ owner.pos[1])
 
-		Projectile.__init__(self, self.owner.world,owner, Grenade.size, startingPos, self.impulse, image0 = Projectile_grenade.image0,lifetime = 3)
+		Projectile.__init__(self, owner.world,owner, Grenade.size, startingPos, self.impulse, image0 = Projectile_grenade.image0,lifetime = 3)
 
 
 	def die(self):
 		area = AOE(self.pos, self.blast_aoe)
-		collidegroup = pygame.sprite.spritecollide(area, enemyGroup, False)
+		collidegroup = pygame.sprite.spritecollide(area, unitGroup, False)
 		for item in collidegroup:
 			tempVec = geo.normalizeVector(item.pos[0]- area.pos[0], item.pos[1] - area.pos[1])
 			item.fixture.body.ApplyLinearImpulse(pygameVec_to_box2dVec((tempVec[0]*self.blast_power,tempVec[1]*self.blast_power)), item.fixture.body.worldCenter, wake = True)
@@ -291,14 +297,14 @@ class Projectile_grenade(Projectile):
 
 
 
-class Projectile_rifle(Projectile):
+class Projectile_Rifle(Projectile):
 	image0 = None
 	def __init__(self, owner, pos, power = 150):
 		# image loading management
-		if Projectile_rifle.image0 == None :
-			Projectile_rifle.image0 = pygame.Surface((5,5))
-			Projectile_rifle.image0.fill(BLACK)
-			Projectile_rifle.image0.set_colorkey(WHITE)
+		if Projectile_Rifle.image0 == None :
+			Projectile_Rifle.image0 = pygame.Surface((5,5))
+			Projectile_Rifle.image0.fill(BLACK)
+			Projectile_Rifle.image0.set_colorkey(WHITE)
 		#--------------------------
 
 
@@ -308,7 +314,7 @@ class Projectile_rifle(Projectile):
 		self.impulse = (vec[0]*power, vec[1]*power)
 		startingPos = (vec[0]*50 +owner.pos[0], vec[1]*50+ owner.pos[1])
 
-		Projectile.__init__(self, owner.world,owner, rifle.size, startingPos, self.impulse, bullet=True, image0 = Projectile_rifle.image0,lifetime = 1, density=20)
+		Projectile.__init__(self, owner.world,owner, Rifle.size, startingPos, self.impulse, bullet=True, image0 = Projectile_Rifle.image0,lifetime = 1, density=20)
 
 
 	def update(self, seconds):
@@ -336,7 +342,7 @@ class Projectile_megaBall(Projectile):
 		self.impulse = (vec[0]*power, vec[1]*power)
 		startingPos = (vec[0]*50 +owner.pos[0], vec[1]*50+ owner.pos[1])
 
-		Projectile.__init__(self, owner.world, owner, rifle.size, startingPos, self.impulse, image0 = Projectile_megaBall.image0,lifetime = 10, density=5000)
+		Projectile.__init__(self, owner.world, owner, Rifle.size, startingPos, self.impulse, image0 = Projectile_megaBall.image0,lifetime = 10, density=5000)
 
 		self.fixture.body.gravityScale = 0
 
@@ -402,7 +408,7 @@ class Crate(GameObject):
 	def __init__(self,world, pos, angle = 0 ):
 		self.body = world.CreateDynamicBody(position = pygame_to_box2d(pos))
 		self.fixture = self.body.CreatePolygonFixture(box = pixel_to_meter((32,32)), density = 1, friction = 0.3, userData = self)
-		self.groups = allGroup, enemyGroup, reboundGroup
+		self.groups = allGroup, enemyGroup, reboundGroup, unitGroup
 		GameObject.__init__(self)
 
 
@@ -416,7 +422,7 @@ class Barrel(GameObject):
 	def __init__(self,world, pos, angle = 0 ):
 		self.body = world.CreateDynamicBody(position = pygame_to_box2d(pos))
 		self.fixture = self.body.CreatePolygonFixture(box = pixel_to_meter((70,32)), density = 1, friction = 0.3, userData = self)
-		self.groups = allGroup, enemyGroup, reboundGroup
+		self.groups = allGroup, enemyGroup, reboundGroup, unitGroup
 		GameObject.__init__(self)
 
 
@@ -466,22 +472,23 @@ class Grenade(Weapon):
 		vec =  geo.normalizeVector(mousePos[0]- self.owner.rect.centerx, mousePos[1]- self.owner.rect.centery)
 
 		# push objects from starting point else bug
-		push_area = AOE((self.owner.pos[0] + vec[0]*Grenade.start_range,self.owner.pos[1] + vec[1]*Grenade.start_range), (28,28))
-		collidegroup = pygame.sprite.spritecollide(push_area, enemyGroup, False)
+		# push_area = AOE((self.owner.pos[0] + vec[0]*Grenade.start_range,self.owner.pos[1] + vec[1]*Grenade.start_range), (28,28))
+		# collidegroup = pygame.sprite.spritecollide(push_area, enemyGroup, False)
 
-		for item in collidegroup:
-			tempVec = geo.normalizeVector(item.rect.centerx - push_area.rect.centerx, item.rect.centery - push_area.rect.centery)
-			item.fixture.body.ApplyLinearImpulse(pygameVec_to_box2dVec((tempVec[0]*self.power,tempVec[1]*self.power)), item.fixture.body.worldCenter, wake = True)
+		# for item in collidegroup:
+		# 	tempVec = geo.normalizeVector(item.rect.centerx - push_area.rect.centerx, item.rect.centery - push_area.rect.centery)
+		# 	item.fixture.body.ApplyLinearImpulse(pygameVec_to_box2dVec((tempVec[0]*self.power,tempVec[1]*self.power)), item.fixture.body.worldCenter, wake = True)
 		# -------------------------------------------
+		pos = (self.owner.pos[0] + self.start_range*vec[0],self.owner.pos[1] + self.start_range*vec[1])
 		Grenade.projectile(self.owner, pos, self.power, blast_aoe = self.blast_aoe, blast_power = self.blast_power)
 
-class rifle(Weapon):
+class Rifle(Weapon):
 	start_range = 20
-	projectile = Projectile_rifle
+	projectile = Projectile_Rifle
 	size = (5,5)
 	weapon_range = 1000
 	def __init__(self, owner, power = 150):
-		Weapon.__init__(self,owner, rifle.weapon_range)
+		Weapon.__init__(self,owner, Rifle.weapon_range)
 		self.power = power
 
 	def activate(self, mousePos):
@@ -489,15 +496,15 @@ class rifle(Weapon):
 
 		# ----------------------------------------
 		#push objects from starting point else bug
-		push_area = AOE((vec[0]*rifle.start_range,vec[1]*megaBall.start_range), (6,6))
-		collidegroup = pygame.sprite.spritecollide(push_area, enemyGroup, False)
+		# push_area = AOE((vec[0]*Rifle.start_range,vec[1]*megaBall.start_range), (6,6))
+		# collidegroup = pygame.sprite.spritecollide(push_area, enemyGroup, False)
 
-		for item in collidegroup:
-			tempVec = geo.normalizeVector(item.rect.centerx - push_area.rect.centerx, item.rect.centery - push_area.rect.centery)
-			item.fixture.body.ApplyLinearImpulse(pygameVec_to_box2dVec((tempVec[0]*self.power,tempVec[1]*self.power)), item.fixture.body.worldCenter, wake = True)
+		# for item in collidegroup:
+		# 	tempVec = geo.normalizeVector(item.rect.centerx - push_area.rect.centerx, item.rect.centery - push_area.rect.centery)
+		# 	item.fixture.body.ApplyLinearImpulse(pygameVec_to_box2dVec((tempVec[0]*self.power,tempVec[1]*self.power)), item.fixture.body.worldCenter, wake = True)
 		# -------------------------------------------
 		pos = (self.owner.pos[0] + self.start_range*vec[0],self.owner.pos[1] + self.start_range*vec[1])
-		rifle.projectile(self.owner, pos, power=self.power)
+		Rifle.projectile(self.owner, pos, power=self.power)
 
 class megaBall(Weapon):
 	start_range = 20
@@ -673,7 +680,7 @@ class Doodad(GameObject):
 	def __init__(self, world, ground, leftpoint = (0,0), width = 100, height = 100, color = BROWN, density = 1):
 		self.world = world
 
-		self.groups = allGroup, terrainGroup, reboundGroup
+		self.groups = allGroup, terrainGroup, reboundGroup,unitGroup
 		self.image0 = pygame.Surface((width,height))
 		self.image0.fill(WHITE)
 		self.image0.set_colorkey(WHITE)
@@ -689,6 +696,11 @@ class Doodad(GameObject):
 
 
 		GameObject.__init__(self)
+
+
+
+
+
 
 
 class StaticObject(pygame.sprite.Sprite): #used for world boundaries and the like

@@ -95,6 +95,8 @@ class EditorGUI(object): #contains value boxes
 					values[i] = 100
 				elif i == 2:
 					values[i]= BROWN
+				elif i == 3:
+					values[i]= 1
 			tempItem = Doodad(self.world, self.ground, unrect(mousePos), width = values[0], height = values[1], color = values[2], density = values[3])
 		self.itemList.append((tempItem,self.item.__name__, tempItem.pos, values))
 
