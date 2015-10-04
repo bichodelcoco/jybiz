@@ -19,6 +19,7 @@ class AnimatedUnit(GameObject):
 		self.desiredVel = 0
 		self.maxSpeed = maxSpeed
 		self.slowFactor = slowFactor
+		self.image0 = self.img_standingRight[0]
 
 
 		
@@ -250,12 +251,6 @@ class Vampire(EnemyUnit):
 		EnemyUnit.update(self, seconds)
 
 
-
-
-
-
-
-
 	def loadImages(self):
 			# image loading management
 		if self.img_standingRight == None :
@@ -287,6 +282,56 @@ pygame.image.load('images/vampire/walk_idle/goLeft_8.png')
 			Vampire.image0 = Vampire.img_standingRight[0]
 		#--------------------------
 
+class Zombie(EnemyUnit):
+	img_standingRight = None
+	spritesize = (40,62)
+
+	def __init__(self, world, pos, maxSpeed = 30, accel = 120, target = None):
+
+		self.loadImages()
+		self.target = target
+		self.weapon = VampireRifle(self)
+
+		EnemyUnit.__init__(self,world, pos, maxSpeed, accel, attack_range = 300, maxHitpoints = 500)
+
+	def update(self, seconds):
+		if self.target :
+			self.goTo_x(self.target.pos[0], 10)
+		# 	if geo.distance(self.pos, self.target.pos) < self.attack_range :
+		# 		self.attack(self.target)
+		EnemyUnit.update(self, seconds)
+
+	def loadImages(self):
+			# image loading management
+		if self.img_standingRight == None :
+			Zombie.img_standingRight  = [pygame.image.load('images/zombie/walk/goRight_1.png')]
+			Zombie.img_standingRight[0].set_colorkey(BLACK)
+
+			Zombie.img_walkingRight = [
+pygame.image.load('images/zombie/walk/goRight_1.png'),			
+pygame.image.load('images/zombie/walk/goRight_2.png'),
+pygame.image.load('images/zombie/walk/goRight_3.png'),
+pygame.image.load('images/zombie/walk/goRight_4.png'),
+pygame.image.load('images/zombie/walk/goRight_5.png'),
+pygame.image.load('images/zombie/walk/goRight_6.png'),
+pygame.image.load('images/zombie/walk/goRight_7.png'),
+pygame.image.load('images/zombie/walk/goRight_8.png'),
+pygame.image.load('images/zombie/walk/goRight_9.png'),
+pygame.image.load('images/zombie/walk/goRight_10.png')
+			]
+
+			Zombie.img_walkingLeft = [
+pygame.image.load('images/zombie/walk/goLeft_1.png'),			
+pygame.image.load('images/zombie/walk/goLeft_2.png'),
+pygame.image.load('images/zombie/walk/goLeft_3.png'),
+pygame.image.load('images/zombie/walk/goLeft_4.png'),
+pygame.image.load('images/zombie/walk/goLeft_5.png'),
+pygame.image.load('images/zombie/walk/goLeft_6.png'),
+pygame.image.load('images/zombie/walk/goLeft_7.png'),
+pygame.image.load('images/zombie/walk/goLeft_8.png'),
+pygame.image.load('images/zombie/walk/goLeft_9.png'),
+pygame.image.load('images/zombie/walk/goLeft_10.png')
+			]
 		
 
 

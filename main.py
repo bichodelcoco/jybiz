@@ -7,6 +7,7 @@ from Box2D.b2 import * # maps b2Vec b2World to vec, world etc
 
 from b2_classes import *
 from b2_units import *
+from b2_weapons import *
 import editor
 
 
@@ -18,7 +19,7 @@ import editor
 
 # Utility functions
 # ----------------------------------------------------------
-FILEPATH = 'tt.db'
+
 
 def pygame_to_box2d(pygame_position):
 	return pygame_position[0]/PPM,(SCREEN_HEIGHT - pygame_position[1])/PPM
@@ -70,7 +71,11 @@ def main(mapFilepath):
 	# --- Game setup -----------------------------------------
 	mainLoop = True
 	player = Player(_world, (600,400))
-	vampire1 = Vampire(_world, (800, 400), target = player)
+	# vampire1 = Vampire(_world, (800, 400), target = player)
+	zombie = Zombie(_world, (800,400), target =player)
+	Zombie(_world, (900,300), target =player)
+	Zombie(_world, (1100,400), target =player)
+	Zombie(_world, (1000,200), target =player)
 	scrollx = 0
 	scrolly = 0
 
@@ -204,5 +209,5 @@ def main(mapFilepath):
 		allGroup.draw(screen)
 		pygame.display.flip()
 
-editor.editor()
+editor.editor(FILEPATH)
 main(FILEPATH)

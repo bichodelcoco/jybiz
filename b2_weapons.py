@@ -53,7 +53,7 @@ class Projectile(GameObject):
 # bat
 #-----------------------------------------------------------------------------------------------
 class BaseballBat(Weapon):
-	def __init__(self, owner, power= 40, aoe = (50,50), weapon_range = 200):
+	def __init__(self, owner, power= 1000, aoe = (50,50), weapon_range = 200):
 		Weapon.__init__(self,owner, weapon_range)
 		self.power = power
 		self.aoe = aoe
@@ -397,8 +397,7 @@ class Hook(pygame.sprite.Sprite):
 		self.image.fill(GREY)
 
 		self.rect = self.image.get_rect()
-		self.rect.center = self.owner.rect.center[:]
-
+		self.pos= self.owner.pos[:]
 	def update(self, seconds):
 
 		if self.latched == False :
@@ -408,11 +407,13 @@ class Hook(pygame.sprite.Sprite):
 
 
 			else :
-				self.rect.centerx += self.vec[0]* self.traveling_speed
-				self.rect.centery += self.vec[1]* self.traveling_speed
+				self.pos = (self.pos[0] +self.vec[0]* self.traveling_speed, self.pos[1] +self.vec[1]* self.traveling_speed)
+				
 		else :
 			self.pull_vec = geo.normalizeVector(self.rect.centerx -self.owner.rect.centerx, self.rect.centery -self.owner.rect.centery)
 			self.owner.fixture.body.ApplyForce(pygameVec_to_box2dVec((self.pull_vec[0]*self.pull_power, self.pull_vec[1]*self.pull_power)), self.owner.fixture.body.worldCenter, wake = True)
+
+		self.rect.center = rect(self.pos)
 
 
 

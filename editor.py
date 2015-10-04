@@ -5,7 +5,7 @@ import geo
 import GUI
 import shelve
 
-FILEPATH = 'tt.db'
+
 # class Map(object)
 # 	def __init__(self, size, file):
 # 		self.grid = [[0 for i in xrange(size[0])] for i in xrange(size[1])
@@ -97,7 +97,7 @@ class Blueprint(pygame.sprite.Sprite):
 
 
 
-def editor():
+def editor(mapFilepath):
 	# Pygame set up
 	# -----------------------------------------------------------
 	screen=pygame.display.set_mode((SCREEN_WIDTH,SCREEN_HEIGHT), 0, 32)
@@ -105,7 +105,7 @@ def editor():
 	clock=pygame.time.Clock()
 	pygame.font.init()
 
-	bigmap = pygame.Surface((g.BIGMAP_WIDTH, g.BIGMAP_HEIGHT))
+	bigmap = pygame.Surface((g.BIGMAP_WIDTH+SCREEN_WIDTH, g.BIGMAP_HEIGHT+SCREEN_HEIGHT))
 	bigmap.fill(WHITE)
 
 	# --- pybox2d world setup -----------------------------------
@@ -124,7 +124,7 @@ def editor():
 	background = bigmap.subsurface((g.CORNERPOINT[0], g.CORNERPOINT[1], SCREEN_WIDTH, SCREEN_HEIGHT)) #take snapshot of bigmap
 	background = background.convert()
 
-
+	
 	# init
 	#---------------------------------------------------------
 	mainLoop = True
@@ -143,6 +143,8 @@ def editor():
 	infoBox = GUI.TextBox(pos = (0, SCREEN_HEIGHT -20), width = 300, height = 20, fontSize = 16)
 	infoString = ''
 	blueprint = Blueprint((1,1))
+
+	load(mapFilepath, _world, ground, gui)
 
 
 
@@ -284,7 +286,7 @@ def save(filepath, itemList):
 		index += 1
 	f.close()
 
-def load(filepath, world, ground):
+def load(filepath, world, ground, editorGui = None):
 	f = shelve.DbfilenameShelf(filepath, flag='r', protocol=None, writeback=False)
 	itemList =[]
 	itemNumber =f['itemNumber']
@@ -292,7 +294,7 @@ def load(filepath, world, ground):
 		itemList.append(f[str(i)])
 
 
-
+	
 	for i in xrange(itemNumber):
 		item = itemList[i]
 		values = item[2]
@@ -300,9 +302,13 @@ def load(filepath, world, ground):
 		name = item[0]
 		
 		if name == 'Ledge':
-			Ledge(world, ground, pos, width = values[0], height = values[1], color = values[2], allowedAngle = (-values[3],values[4]))
+			temp = Ledge(world, ground, pos, width = values[0], height = values[1], color = values[2], allowedAngle = (-values[3],values[4]))		
 		elif name == 'Doodad':
-			Doodad(world, ground, pos, width = values[0], height = values[1], color = values[2], density = values[3])
+			temp =Doodad(world, ground, pos, width = values[0], height = values[1], color = values[2], density = values[3])
+
+		if editorGui :
+			editorGui.itemList.append((temp, name, pos, values))
+	
 	
 	f.close()
 
