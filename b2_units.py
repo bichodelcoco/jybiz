@@ -1,10 +1,11 @@
 from b2_classes import *
+from b2_weapons import *
 
 
 class AnimatedUnit(GameObject):
 	'''GameObject.init() NEEDS : Box2D object to be created(uses self.fixture in update), self.groups, self.image0 to be set '''
 	''' so AnimatedUnit needs self.spritesize, self.image0, self.groups to be set'''
-	def __init__(self,world, pos, maxSpeed = 30,accel = 15,slowFactor = 0.4, health = 100):
+	def __init__(self,world, pos, maxSpeed = 30,accel = 15,slowFactor = 0.4, maxHitpoints = 100, lifetime = -1):
 		self.img_cycleTime = 0.0
 		self.img_index = 0
 		self.img_interval = 0.2
@@ -20,11 +21,13 @@ class AnimatedUnit(GameObject):
 		self.slowFactor = slowFactor
 
 
+		
 		self.world = world
 		self.body = world.CreateDynamicBody(position = pygame_to_box2d(pos), fixedRotation = False, angularDamping=0.5)
 		self.fixture = self.body.CreatePolygonFixture(box = pixel_to_meter(self.spritesize), density = 1, friction = 0.3, userData = self)
-		GameObject.__init__(self, health)
+		GameObject.__init__(self, maxHitpoints, lifetime = lifetime)
 
+		self.lifebar = Lifebar(self)
 
 	def update(self, seconds):
 		self.vel = self.body.linearVelocity
@@ -148,6 +151,10 @@ class AnimatedUnit(GameObject):
 			self.fixture.body.ApplyLinearImpulse((0,15*self.fixture.body.mass), self.fixture.body.worldCenter, wake = True)
 			self.jumps += 1
 
+	def kill(self):
+		self.lifebar.kill()
+		GameObject.kill(self)
+
 class Player(AnimatedUnit):
 	spritesheet = None
 	img_standingRight = None
@@ -163,7 +170,7 @@ class Player(AnimatedUnit):
 		self.timeSinceShot = 0.0
 
 		self.groups = allGroup, unitGroup
-		AnimatedUnit.__init__(self,world, pos, maxSpeed = 30, accel = 120, health = 300)
+		AnimatedUnit.__init__(self,world, pos, maxSpeed = 30, accel = 120, maxHitpoints = 300)
 
 		# ledge management
 		self.feet = pygame.sprite.Sprite()
@@ -199,14 +206,14 @@ class Player(AnimatedUnit):
 
 class EnemyUnit(AnimatedUnit):
 
-	def __init__(self, world, pos, maxSpeed = 20, accel = 50, attack_range = 300, health = 100):
+	def __init__(self, world, pos, maxSpeed = 20, accel = 50, attack_range = 300, maxHitpoints = 100):
 
 
 		
 		self.groups = allGroup, enemyGroup, unitGroup
 		self.attack_range = attack_range
 
-		AnimatedUnit.__init__(self,world,pos, maxSpeed = maxSpeed, accel = accel, health = health)
+		AnimatedUnit.__init__(self,world,pos, maxSpeed = maxSpeed, accel = accel, maxHitpoints = maxHitpoints)
 
 
 
@@ -253,7 +260,7 @@ class Vampire(EnemyUnit):
 			# image loading management
 		if self.img_standingRight == None :
 			Vampire.img_standingRight  = [pygame.image.load('images/vampire/walk_idle/goRight_1.png')]
-			Vampire.img_standingRight.set_colorkey(WHITE)
+			Vampire.img_standingRight[0].set_colorkey(WHITE)
 
 			Vampire.img_walkingRight = [
 pygame.image.load('images/vampire/walk_idle/goRight_1.png'),			

@@ -12,7 +12,7 @@ class Weapon(object):
 class Projectile(GameObject):
 	''' PROJECTILE.IMAGE0 SHOLD BE HORIZONTAL FACING RIGHT'''
 
-	def __init__(self, world, owner, size, startingPos,  startingImpulse, bullet=False, image0= None,lifetime = -1, density=1, boxShape = True, angle = 0):
+	def __init__(self, world, owner, size, startingPos,  startingImpulse, bullet=False, image0= None,lifetime = -1, density=1, boxShape = True, angle = 0,damage = 1,targetGroup = enemyGroup):
 		self.world = world
 		self.owner = owner
 		self.startingPos = startingPos
@@ -20,6 +20,8 @@ class Projectile(GameObject):
 		self.startingImpulse = startingImpulse
 		self.lifetime= lifetime
 		self.alivetime = 0.0
+		self.targetGroup = targetGroup
+		self.damage = damage
 		self.image0 = image0
 
 		if boxShape :
@@ -33,10 +35,15 @@ class Projectile(GameObject):
 
 
 	def update(self, seconds):
-		self.alivetime += seconds
-		if self.alivetime >= self.lifetime :
-			self.die()
+
 		GameObject.update(self,seconds)
+
+		collidegroup = pygame.sprite.spritecollide(self, self.targetGroup, False)
+		if collidegroup:
+			speed = self.vel.x + self.vel.y
+			for unit in collidegroup :
+
+				unit.loseHitpoints(speed*self.damage)
 
 	def die(self):
 		self.kill()
@@ -64,7 +71,6 @@ class BaseballBat(Weapon):
 # -------------------------------------------------------------------------------------------------
 class Grenade(Weapon):
 	start_range = 20
-	projectile = Projectile_grenade
 	size = (25,25)
 	weapon_range = 1000 #distance a laquelle tu peux cliquer
 	def __init__(self, owner, power = 40, blast_aoe = (100,100), blast_power = 500):#power : init velocity
@@ -85,18 +91,18 @@ class Grenade(Weapon):
 		# 	item.fixture.body.ApplyLinearImpulse(pygameVec_to_box2dVec((tempVec[0]*self.power,tempVec[1]*self.power)), item.fixture.body.worldCenter, wake = True)
 		# -------------------------------------------
 		pos = (self.owner.pos[0] + self.start_range*vec[0],self.owner.pos[1] + self.start_range*vec[1])
-		Grenade.projectile(self.owner, pos, self.power, blast_aoe = self.blast_aoe, blast_power = self.blast_power)
+		Projectile_Grenade(self.owner, pos, self.power, blast_aoe = self.blast_aoe, blast_power = self.blast_power)
 
 #	Grenade Projectile
 #-------------------------------------------------------------------------------------------------------------------------
 
-class Projectile_grenade(Projectile):
+class Projectile_Grenade(Projectile):
 	image0 = None
 	def __init__(self, owner, pos, power = 40, blast_aoe = (200,200),blast_power = 500):
 		# image loading management
-		if Projectile_grenade.image0 == None :
-			Projectile_grenade.image0 = pygame.image.load('images/weapons/grenade.png')
-			Projectile_grenade.image0.set_colorkey(WHITE)
+		if Projectile_Grenade.image0 == None :
+			Projectile_Grenade.image0 = pygame.image.load('images/weapons/grenade.png')
+			Projectile_Grenade.image0.set_colorkey(WHITE)
 		#--------------------------
 
 
@@ -108,7 +114,7 @@ class Projectile_grenade(Projectile):
 		self.impulse = (vec[0]*power, vec[1]*power)
 		startingPos = (vec[0]*50 +owner.pos[0], vec[1]*50+ owner.pos[1])
 
-		Projectile.__init__(self, owner.world,owner, Grenade.size, startingPos, self.impulse, image0 = Projectile_grenade.image0,lifetime = 3)
+		Projectile.__init__(self, owner.world,owner, Grenade.size, startingPos, self.impulse, image0 = Projectile_Grenade.image0,lifetime = 3)
 
 
 	def die(self):
@@ -129,7 +135,6 @@ class Projectile_grenade(Projectile):
 
 class Rifle(Weapon):
 	start_range = 20
-	projectile = Projectile_Rifle
 	size = (5,5)
 	weapon_range = 1000
 	def __init__(self, owner, power = 150):
@@ -149,7 +154,7 @@ class Rifle(Weapon):
 		# 	item.fixture.body.ApplyLinearImpulse(pygameVec_to_box2dVec((tempVec[0]*self.power,tempVec[1]*self.power)), item.fixture.body.worldCenter, wake = True)
 		# -------------------------------------------
 		pos = (self.owner.pos[0] + self.start_range*vec[0],self.owner.pos[1] + self.start_range*vec[1])
-		Rifle.projectile(self.owner, pos, power=self.power)
+		Projectile_Rifle(self.owner, pos, power=self.power)
 
 # Rifle projectile
 # ------------------------------------------------------------------------------------------------------------------
@@ -177,12 +182,54 @@ class Projectile_Rifle(Projectile):
 
 		Projectile.update(self,seconds)
 
+# Vampire Rifle
+# ------------------------------------------------------------------------------------------------------------------
+
+class VampireRifle(Weapon):
+	start_range = 20
+	size = (5,5)
+	weapon_range = 1000
+	def __init__(self, owner, power = 150):
+		Weapon.__init__(self,owner, Rifle.weapon_range)
+		self.power = power
+
+	def activate(self, mousePos):
+		vec =  geo.normalizeVector(mousePos[0]- self.owner.rect.centerx, mousePos[1]- self.owner.rect.centery)
+
+		pos = (self.owner.pos[0] + self.start_range*vec[0],self.owner.pos[1] + self.start_range*vec[1])
+		Projectile_VampireRifle(self.owner, pos, power=self.power)
+
+# Vampire Rifle projectile
+# ------------------------------------------------------------------------------------------------------------------
+class Projectile_VampireRifle(Projectile):
+	image0 = None
+	size = (10,7)
+	def __init__(self, owner, pos, power = 150, targetGroup = playerGroup):
+		# image loadinVampireg management
+		if self.image0 == None :
+			Projectile_VampireRifle.image0 = pygame.Surface(self.size)
+			Projectile_VampireRifle.image0.fill(BLACK)
+			Projectile_VampireRifle.image0.set_colorkey(WHITE)
+		#--------------------------
+
+
+		
+		self.power = power
+		vec = geo.normalizeVector(pos[0]- owner.pos[0], pos[1]- owner.pos[1])
+		self.impulse = (vec[0]*power, vec[1]*power)
+		startingPos = (vec[0]*50 +owner.pos[0], vec[1]*50+ owner.pos[1])
+
+		Projectile.__init__(self, owner.world,owner, self.size, startingPos, self.impulse, bullet=True, image0 = Projectile_VampireRifle.image0,lifetime = 1, density=20, targetGroup = targetGroup)
+
+
+	def update(self, seconds):
+
+		Projectile.update(self,seconds)
 # MegaBall
 # ------------------------------------------------------------------------------------------------------------------
 
 class megaBall(Weapon):
 	start_range = 20
-	projectile = Projectile_megaBall
 	size = (220,220)
 	weapon_range = 1000
 	def __init__(self, owner, power = 1000):
@@ -202,7 +249,7 @@ class megaBall(Weapon):
 			item.fixture.body.ApplyLinearImpulse(pygameVec_to_box2dVec((tempVec[0]*self.power,tempVec[1]*self.power)), item.fixture.body.worldCenter, wake = True)
 		# -------------------------------------------
 		pos = (self.owner.pos[0] + self.start_range*vec[0],self.owner.pos[1] + self.start_range*vec[1])
-		megaBall.projectile(self.owner, pos, power=self.power)
+		Projectile_megaBall(self.owner, pos, power=self.power)
 
 # MegaBall projectile
 # -----------------------------------------------------------------------------------------------------------------------------------
@@ -248,7 +295,6 @@ class Projectile_megaBall(Projectile):
 
 class Hadouken(Weapon):
 	start_range = 70
-	projectile = Projectile_Hadouken
 	weapon_range = 2000
 	def __init__(self, owner, speed = 5, recoil = 10, power = 90000, cooldown = 0.0 ):
 		Weapon.__init__(self, owner, Hadouken.weapon_range)
@@ -269,7 +315,7 @@ class Hadouken(Weapon):
 		# 	item.fixture.body.ApplyLinearImpulse(pygameVec_to_box2dVec((tempVec[0]*self.power,tempVec[1]*self.power)), item.fixture.body.worldCenter, wake = True)
 		# -------------------------------------------
 		pos = (self.owner.pos[0] + self.start_range*vec[0],self.owner.pos[1] + self.start_range*vec[1])
-		self.projectile(self.owner, pos, power= self.power, speed = self.speed, recoil = self.recoil)
+		Projectile_Hadouken(self.owner, pos, power= self.power, speed = self.speed, recoil = self.recoil)
 
 # Hadouken projectile
 # -------------------------------------------------------------------------------------------------------------------------------------------
@@ -331,7 +377,8 @@ class GrapplingHook(Weapon):
 			hook.kill()
 			self.garbage_bin.remove(hook)
 
-
+# Hook not a regular projectile : has no collision
+# ---------------------------------------------------------------------------------------
 
 class Hook(pygame.sprite.Sprite):
 	def __init__(self, owner, mousePos, pull_power = 400, traveling_speed = 40):
