@@ -285,7 +285,8 @@ class GameObject(pygame.sprite.Sprite):
 
 
 	def kill(self):
-		g.TO_DESTROY.append(self.fixture.body)
+		# g.TO_DESTROY.append(self.fixture.body)
+		self.world.DestroyBody(self.body)
 		pygame.sprite.Sprite.kill(self)
 
 

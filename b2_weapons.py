@@ -160,7 +160,7 @@ class Rifle(Weapon):
 # ------------------------------------------------------------------------------------------------------------------
 class Projectile_Rifle(Projectile):
 	image0 = None
-	def __init__(self, owner, pos, power = 150):
+	def __init__(self, owner, pos, power = 150, damage = 0.2):
 		# image loading management
 		if Projectile_Rifle.image0 == None :
 			Projectile_Rifle.image0 = pygame.Surface((5,5))
@@ -175,7 +175,7 @@ class Projectile_Rifle(Projectile):
 		self.impulse = (vec[0]*power, vec[1]*power)
 		startingPos = (vec[0]*50 +owner.pos[0], vec[1]*50+ owner.pos[1])
 
-		Projectile.__init__(self, owner.world,owner, Rifle.size, startingPos, self.impulse, bullet=True, image0 = Projectile_Rifle.image0,lifetime = 1, density=20)
+		Projectile.__init__(self, owner.world,owner, Rifle.size, startingPos, self.impulse, bullet=True, image0 = Projectile_Rifle.image0,lifetime = 1, density=20, damage = damage)
 
 
 	def update(self, seconds):
