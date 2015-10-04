@@ -228,7 +228,7 @@ class EnemyUnit(AnimatedUnit):
 
 	def attack(self, target):
 		#self.playAnim_attack()
-		self.weapon.activate(target.pos)
+		self.weapon.activate(unrect(target.pos))
 
 class Vampire(EnemyUnit):
 	img_standingRight = None

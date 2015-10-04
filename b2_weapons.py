@@ -28,7 +28,7 @@ class Projectile(GameObject):
 			self.body = world.CreateDynamicBody(position = pygame_to_box2d(startingPos), bullet=bullet)
 			self.fixture = self.body.CreatePolygonFixture(box = pixel_to_meter(size), density = density, friction = 0.3, userData = self)
 		self.groups = allGroup, projectileGroup, reboundGroup
-		GameObject.__init__(self)
+		GameObject.__init__(self, lifetime = lifetime)
 
 		self.fixture.body.ApplyLinearImpulse(pygameVec_to_box2dVec(self.impulse), self.fixture.body.worldCenter, wake = True)
 
