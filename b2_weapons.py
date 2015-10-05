@@ -40,7 +40,7 @@ class Projectile(GameObject):
 
 		collidegroup = pygame.sprite.spritecollide(self, self.targetGroup, False)
 		if collidegroup:
-			speed = self.vel.x + self.vel.y
+			speed = geo.absolute(self.vel.x + self.vel.y)
 			for unit in collidegroup :
 
 				unit.loseHitpoints(speed*self.damage)

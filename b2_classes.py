@@ -140,40 +140,40 @@ class AOE(pygame.sprite.DirtySprite) :
 
 class Lifebar(pygame.sprite.Sprite):
 
-	def __init__(self, owner, distance = 12, size = (40, 7)):
+	def __init__(self, owner, distance = 12, size = (40, 5)):
 
 		self.owner = owner
-		self.percent = 1
+		self.percent = 1.0
 		self.old_ownerHitpoints = self.owner.maxHitpoints
 		self.distance = distance
 		self.size = size
 
 		
-
-		pygame.sprite.Sprite.__init__(self)
+		self.groups = allGroup
+		pygame.sprite.Sprite.__init__(self, self.groups)
 
 		self.image = pygame.Surface(size)
+		self.image.set_colorkey(BLACK)
 		self.rect= self.image.get_rect()
 
-		self.rect.topleft = (self.owner.rect.topleft[0], self.owner.rect.topleft[1] + self.distance)
+		self.rect.topleft = (self.owner.rect.topleft[0], self.owner.rect.topleft[1] - self.distance)
 
 		self.refresh()
 
 	def update(self, seconds):
-		self.rect.topleft = (self.owner.rect.topleft[0], self.owner.rect.topleft[1] + self.distance)
+		self.rect.topleft = (self.owner.rect.topleft[0], self.owner.rect.topleft[1] - self.distance)
 		if self.owner.hitpoints != self.old_ownerHitpoints:
-			self.percent = self.owner.hitpoints / (self.owner.maxHitpoints*1.0)
+			self.percent = self.owner.hitpoints*1.0 / (self.owner.maxHitpoints*1.0)
+			self.old_ownerHitpoints = self.owner.hitpoints
 			self.refresh()
 
 	def refresh(self):
-		if self.percent != 1:
-			if self not in allGroup :
-				allGroup.add(self)
+		if self.percent != 1.0:
+			
 			pygame.draw.rect(self.image, BRIGHTGREEN,(0,0, self.size[0]*self.percent, self.size[1]))
-			pygame.draw.rect(self.image, RED, (0,   self.size[0]*self.percent,  self.size[0]*(1-self.percent), self.size[1]))
-		elif self in allGroup :
-			self.kill()
-
+			pygame.draw.rect(self.image, RED, ( self.size[0]*self.percent,  0,  self.size[0]*(1-self.percent), self.size[1]))
+		else :
+			self.image.fill(BLACK)
 
 
 
