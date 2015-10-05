@@ -144,6 +144,10 @@ def main(mapFilepath):
 					g.LEFT_CLICK = True
 					if geo.distance(player.pos, cursor.pos) <= player.weapon1.weapon_range :
 						player.left_click(cursor.rect.topleft)
+				if event.button == 3:
+					g.RIGHT_CLICK = True
+					if geo.distance(player.pos, cursor.pos) <= player.weapon2.weapon_range :
+						player.right_click(cursor.rect.topleft)
 				elif event.button == 4 :
 					player.rotateLeft()
 				elif event.button == 5 :
@@ -152,6 +156,9 @@ def main(mapFilepath):
 				if event.button == 1:
 					g.LEFT_CLICK = False
 					player.weapon1.deactivate()
+				if event.button == 3:
+					g.RIGHT_CLICK = False
+					player.weapon2.deactivate()
 		if g.K_RIGHT :
 			if g.TIMEON:
 				player.goRight()

@@ -452,9 +452,10 @@ class Projectile_BouncingBall(Projectile):
 
 		# image loading management
 		if Projectile_BouncingBall.image0 == None :
-			Projectile_BouncingBall.image0= pygame.image.load('images/weapons/bouncingball.png')
+			Projectile_BouncingBall.image0= pygame.image.load('images/weapons/bouncingball.png').convert()
 			#Projectile_BouncingBall.image0 = pygame.transform.rotate(Projectile_BouncingBall.image0, self.angle)
 			setColorkey(Projectile_BouncingBall.image0)
+
 		
 		#--------------------------
 
