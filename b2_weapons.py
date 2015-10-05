@@ -106,7 +106,7 @@ class Projectile_Grenade(Projectile):
 		#--------------------------
 
 
-		
+
 		self.power = power
 		self.blast_aoe = blast_aoe
 		self.blast_power = blast_power
@@ -169,7 +169,7 @@ class Projectile_Rifle(Projectile):
 		#--------------------------
 
 
-		
+
 		self.power = power
 		vec = geo.normalizeVector(pos[0]- owner.pos[0], pos[1]- owner.pos[1])
 		self.impulse = (vec[0]*power, vec[1]*power)
@@ -213,7 +213,7 @@ class Projectile_VampireRifle(Projectile):
 		#--------------------------
 
 
-		
+
 		self.power = power
 		vec = geo.normalizeVector(pos[0]- owner.pos[0], pos[1]- owner.pos[1])
 		self.impulse = (vec[0]*power, vec[1]*power)
@@ -229,10 +229,10 @@ class Projectile_VampireRifle(Projectile):
 # ------------------------------------------------------------------------------------------------------------------
 
 class megaBall(Weapon):
-	start_range = 20
-	size = (220,220)
+	start_range = 250
+	size = (75,75)
 	weapon_range = 1000
-	def __init__(self, owner, power = 1000):
+	def __init__(self, owner, power = 10000):
 		Weapon.__init__(self,owner, megaBall.weapon_range)
 		self.power = power
 
@@ -241,7 +241,7 @@ class megaBall(Weapon):
 
 		# ----------------------------------------
 		#push objects from starting point else bug
-		push_area = AOE((vec[0]*megaBall.start_range,vec[1]*megaBall.start_range), (221,221))
+		push_area = AOE((vec[0]*megaBall.start_range,vec[1]*megaBall.start_range), (76,76))
 		collidegroup = pygame.sprite.spritecollide(push_area, enemyGroup, False)
 
 		for item in collidegroup:
@@ -256,25 +256,25 @@ class megaBall(Weapon):
 
 class Projectile_megaBall(Projectile):
 	image0 = None
-	def __init__(self, owner, pos, power = 1000, blast_aoe = (230,230), blast_power = 10):
+	def __init__(self, owner, pos, power = 10000, blast_aoe = (210,210), blast_power = 10):
 
 
 		# image loading management
 		if Projectile_megaBall.image0 == None :
-			Projectile_megaBall.image0 = pygame.image.load('images/weapons/megaBall_big.png')
+			Projectile_megaBall.image0 = pygame.image.load('images/weapons/megaSquare75.png')
 			Projectile_megaBall.image0.set_colorkey(WHITE)
 		#--------------------------
 
 		vec = geo.normalizeVector(pos[0]- owner.pos[0], pos[1]- owner.pos[1])
-		
+
 		self.power = power
 		self.blast_aoe=blast_aoe
 		self.blast_power=blast_power
-		
+
 		self.impulse = (vec[0]*power, vec[1]*power)
 		startingPos = (vec[0]*50 +owner.pos[0], vec[1]*50+ owner.pos[1])
 
-		Projectile.__init__(self, owner.world, owner, Rifle.size, startingPos, self.impulse, image0 = Projectile_megaBall.image0,lifetime = 10, density=5000)
+		Projectile.__init__(self, owner.world, owner, megaBall.size, startingPos, self.impulse, image0 = Projectile_megaBall.image0,lifetime = 5, density=500)
 
 		self.fixture.body.gravityScale = 0
 
@@ -332,7 +332,7 @@ class Projectile_Hadouken(Projectile):
 			self.angle =geo.vecAngle((1,0), vec)
 		else :
 			self.angle = -geo.vecAngle((1,0), vec)
-		
+
 		# image loading management
 		if Projectile_Hadouken.image0 == None :
 			Projectile_Hadouken.image0= pygame.image.load('images/weapons/hadouken.png')
@@ -408,21 +408,9 @@ class Hook(pygame.sprite.Sprite):
 
 			else :
 				self.pos = (self.pos[0] +self.vec[0]* self.traveling_speed, self.pos[1] +self.vec[1]* self.traveling_speed)
-				
+
 		else :
 			self.pull_vec = geo.normalizeVector(self.rect.centerx -self.owner.rect.centerx, self.rect.centery -self.owner.rect.centery)
 			self.owner.fixture.body.ApplyForce(pygameVec_to_box2dVec((self.pull_vec[0]*self.pull_power, self.pull_vec[1]*self.pull_power)), self.owner.fixture.body.worldCenter, wake = True)
 
 		self.rect.center = rect(self.pos)
-
-
-
-
-
-
-
-
-
-
-
-
