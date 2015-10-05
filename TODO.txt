@@ -25,6 +25,7 @@ FAIT UN PEU DU 7. et 8. QUAND TA LA NON FLEMME PCQ C CHIANT
 		-balle rebondissante (petit, très long temps de vie, high rebond)
 		-boules qui gravitent autour de toi : protection + dmg
 		-brique man : mvt = 0 ; density = 6000000 (du player) ; temps = 1 sec (on en avait déja parlé)
+		-shield
 	ennemis
 	objets terrains
 	missions
