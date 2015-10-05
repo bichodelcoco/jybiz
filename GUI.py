@@ -215,7 +215,22 @@ class ValueBox(pygame.sprite.Sprite):
 
 
 
+# class JustText(pygame.sprite.Sprite)
+# 	def __init__(self, pos = (0,0), width = 624, height = 120, text_color = BLACK, background_color = None, text = '', fontSize = 32, font = None, justification = 0):
 
+# 		self.groups = allGroup
+# 		pygame.sprite.Sprite.__init__(self, self.groups)
+
+# 		self.font = pygame.font.SysFont('None', fontSize)
+
+# 		self.rect = pygame.Rect(pos, (width, height))
+		
+# 		self.text = text
+# 		self.background_color = background_color
+# 		self.old_color = self.background_color
+# 		self.text_color = text_color
+# 		self.justification = justification
+# 		self.writeText(text)
 
 class TextBox(pygame.sprite.Sprite):
 
@@ -318,3 +333,75 @@ class AbilityButton(Button):
 
 	def click(self):
 		self.ability.click()
+
+class Icon(pygame.sprite.Sprite):
+	def __init__(self, pos, imagepath = None, size =(40,40)):
+
+		self.groups = allGroup, guiGroup
+		pygame.sprite.Sprite.__init__(self, self.groups)
+
+		self.image = pygame.image.load(imagepath)
+		self.rect = self.image.get_rect()
+
+		self.rect.topleft = pos[:]
+
+class WeaponIcon(Icon):
+
+	def __init__(self, pos, weapon = None):
+
+		self.weapon = weapon
+
+		if self.weapon.__class__.__name__ == 'Rifle' :
+			imagepath = 'images/icons/rifle_icon.png'
+		elif self.weapon.__class__.__name__== 'BaseballBat' :
+			imagepath = 'images/icons/baseballbat_icon.png'
+		elif self.weapon.__class__.__name__== 'GrapplingHook' :
+			imagepath = 'images/icons/hook_icon.png'
+		elif self.weapon.__class__.__name__== 'Grenade' :
+			imagepath = 'images/icons/grenade_icon.png'
+		elif self.weapon.__class__.__name__== 'megaBall' :
+			imagepath = 'images/icons/megaball_icon.png'
+		elif self.weapon.__class__.__name__== 'Hadouken' :
+			imagepath = 'images/icons/hadouken_icon.png'
+		elif self.weapon.__class__.__name__== 'BouncingBall' :
+			imagepath = 'images/icons/bouncingball_icon.png'
+
+
+
+
+		Icon.__init__(self, pos, imagepath)
+
+
+class GameGUI(object):
+
+	def __init__(self, world, ground, player = None):
+
+		self.world = world
+		self.ground = ground
+		self.player = player
+
+		self.weaponslot1 = WeaponIcon((SCREEN_WIDTH - 150, SCREEN_HEIGHT - 80),weapon =self.player.weapon1)
+		self.weaponslot2 = WeaponIcon((SCREEN_WIDTH - 90, SCREEN_HEIGHT - 80),weapon =self.player.weapon2)
+
+		self.weapon1NameBox = TextBox(pos =(SCREEN_WIDTH - 160, SCREEN_HEIGHT - 30), width = 60, height = 20, text = self.player.weapon1.__class__.name, fontSize = 14, justification = 1)
+		self.weapon2NameBox = TextBox(pos =(SCREEN_WIDTH - 100, SCREEN_HEIGHT - 30), width = 60, height = 20, text = self.player.weapon2.__class__.name, fontSize = 14, justification = 1)
+
+	def update(self):
+		if self.weaponslot1.weapon != self.player.weapon1 :
+			self.weaponslot1.kill()
+			self.weaponslot1 = WeaponIcon((SCREEN_WIDTH - 150, SCREEN_HEIGHT - 80),weapon =self.player.weapon1)
+			self.weapon1NameBox.writeText(self.player.weapon1.__class__.name)
+
+		if self.weaponslot2.weapon != self.player.weapon2 :
+			self.weaponslot2.kill()
+			self.weaponslot2 = WeaponIcon((SCREEN_WIDTH - 90, SCREEN_HEIGHT - 80),weapon =self.player.weapon2)
+			self.weapon2NameBox.writeText(self.player.weapon2.__class__.name)
+		
+
+
+
+
+
+	
+
+

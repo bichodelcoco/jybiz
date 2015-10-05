@@ -53,6 +53,7 @@ class Projectile(GameObject):
 # bat
 #-----------------------------------------------------------------------------------------------
 class BaseballBat(Weapon):
+	name = 'Bat'
 	def __init__(self, owner, power= 1000, aoe = (50,50), weapon_range = 200):
 		Weapon.__init__(self,owner, weapon_range)
 		self.power = power
@@ -70,6 +71,7 @@ class BaseballBat(Weapon):
 # Grenade
 # -------------------------------------------------------------------------------------------------
 class Grenade(Weapon):
+	name = 'Grenade'
 	start_range = 20
 	size = (25,25)
 	weapon_range = 1000 #distance a laquelle tu peux cliquer
@@ -134,6 +136,7 @@ class Projectile_Grenade(Projectile):
 # ------------------------------------------------------------------------------------------------------------------
 
 class Rifle(Weapon):
+	name = 'Rifle'
 	start_range = 20
 	size = (5,5)
 	weapon_range = 1000
@@ -186,6 +189,7 @@ class Projectile_Rifle(Projectile):
 # ------------------------------------------------------------------------------------------------------------------
 
 class VampireRifle(Weapon):
+	name = 'Rifle'
 	start_range = 20
 	size = (5,5)
 	weapon_range = 1000
@@ -229,6 +233,7 @@ class Projectile_VampireRifle(Projectile):
 # ------------------------------------------------------------------------------------------------------------------
 
 class megaBall(Weapon):
+	name = 'Mega Ball'
 	start_range = 250
 	size = (75,75)
 	weapon_range = 1000
@@ -294,6 +299,7 @@ class Projectile_megaBall(Projectile):
 # ----------------------------------------------------------------------------------------------------------------------------------
 
 class Hadouken(Weapon):
+	name = 'Hadouken'
 	start_range = 70
 	weapon_range = 2000
 	def __init__(self, owner, speed = 5, recoil = 10, power = 90000, cooldown = 0.0 ):
@@ -360,6 +366,7 @@ class Projectile_Hadouken(Projectile):
 # ----------------------------------------------------------------------------------
 
 class GrapplingHook(Weapon):
+	name = 'Hook'
 	weapon_range = 1000
 
 	def __init__(self,owner, pull_power =500):
@@ -414,3 +421,55 @@ class Hook(pygame.sprite.Sprite):
 			self.owner.fixture.body.ApplyForce(pygameVec_to_box2dVec((self.pull_vec[0]*self.pull_power, self.pull_vec[1]*self.pull_power)), self.owner.fixture.body.worldCenter, wake = True)
 
 		self.rect.center = rect(self.pos)
+
+class BouncingBall(Weapon):
+	name = 'Bouncing'
+	start_range = 5
+	weapon_range = 2000
+	def __init__(self, owner, power = 20, cooldown = 0.0 ):
+		Weapon.__init__(self, owner, self.weapon_range)
+		
+		self.power =power
+		self.cooldown = cooldown
+
+	def activate(self, mousePos):
+		vec =  geo.normalizeVector(mousePos[0]- self.owner.rect.centerx, mousePos[1]- self.owner.rect.centery)
+		
+		pos = (self.owner.pos[0] + self.start_range*vec[0],self.owner.pos[1] + self.start_range*vec[1])
+		Projectile_BouncingBall(self.owner, pos, power= self.power)
+
+class Projectile_BouncingBall(Projectile):
+	image0 = None
+	size = (30,30)
+
+	def __init__(self, owner, pos,power = 20):
+
+		vec = (pos[0]- owner.pos[0], pos[1]- owner.pos[1])
+		if vec[1] <= 0:
+			self.angle =geo.vecAngle((1,0), vec)
+		else :
+			self.angle = -geo.vecAngle((1,0), vec)
+
+		# image loading management
+		if Projectile_BouncingBall.image0 == None :
+			Projectile_BouncingBall.image0= pygame.image.load('images/weapons/bouncingball.png')
+			#Projectile_BouncingBall.image0 = pygame.transform.rotate(Projectile_BouncingBall.image0, self.angle)
+			setColorkey(Projectile_BouncingBall.image0)
+		
+		#--------------------------
+
+		self.power = power
+		
+
+		self.world = owner.world
+		self.body = self.world.CreateDynamicBody(position = pygame_to_box2d(pos), bullet = True, angle = self.angle)
+		self.fixture = self.body.CreateCircleFixture(radius = real_pixel_to_meter(15), restitution = 1.2, density = 2, friction = 0, userData = self)
+
+
+		vec = geo.normalizeVector(pos[0]- owner.pos[0], pos[1]- owner.pos[1])
+		self.impulse = (vec[0]*self.power, vec[1]* self.power)
+		
+
+		Projectile.__init__(self, self.world, owner, self.size, pos, self.impulse,bullet= True, image0 = self.image0, lifetime = 15, boxShape = False)
+
+

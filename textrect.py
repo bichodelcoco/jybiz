@@ -32,6 +32,7 @@ def render_textrect(string, font, rect, text_color, background_color, justificat
     import pygame
     
     final_lines = []
+    tempword = ''
 
     requested_lines = string.splitlines()
 
@@ -44,7 +45,18 @@ def render_textrect(string, font, rect, text_color, background_color, justificat
             # if any of our words are too long to fit, return.
             for word in words:
                 if font.size(word)[0] >= rect.width:
-                    raise TextRectException, "The word " + word + " is too long to fit in the rect passed."
+                    tempword = ''
+                    j = 0
+                    while font.size(tempword)[0] < rect.width-1:
+                        tempword = ''
+                        j += 1
+                        for i in xrange(len(word)-j):
+                            tempword += word[i]
+                if tempword:
+                    word = tempword
+                    tempword = ''
+
+
             # Start a new line
             accumulated_line = ""
             for word in words:

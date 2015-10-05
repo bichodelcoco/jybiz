@@ -9,6 +9,7 @@ from b2_classes import *
 from b2_units import *
 from b2_weapons import *
 import editor
+import GUI
 
 
 # Constants
@@ -79,9 +80,14 @@ def main(mapFilepath):
 	scrollx = 0
 	scrolly = 0
 
-	weapons = [Rifle(player), Hadouken(player), BaseballBat(player), megaBall(player),GrapplingHook(player)]
-	weapon_index = 0
-	player.weapon = weapons[0]
+	weapons1 = [Rifle(player), Hadouken(player), BaseballBat(player), megaBall(player),GrapplingHook(player), Grenade(player), BouncingBall(player)]
+	weapons2 = [megaBall(player),GrapplingHook(player), Grenade(player)]
+	weapon1_index = 0
+	weapon2_index = 0
+	player.weapon1 = weapons1[0]
+	player.weapon2 = weapons2[2]
+
+	gui = GUI.GameGUI(_world, ground, player)
 
 
 
@@ -105,7 +111,7 @@ def main(mapFilepath):
 				if event.key == K_SPACE :
 					player.jump()
 				elif event.key == K_s :
-					player.ground()
+					g.K_DOWN = True
 				# elif event.key == K_z :
 				# 	player.stand()
 
@@ -119,10 +125,15 @@ def main(mapFilepath):
 					#player.stop()
 					player.go(0,player.accel)
 				elif event.key == K_s :
-					player.slowing = False
+					g.K_DOWN = False
 				elif event.key == K_x :
-					weapon_index = (weapon_index +1) % len(weapons)
-					player.weapon = weapons[weapon_index]
+					weapon1_index = (weapon1_index +1) % len(weapons1)
+					player.weapon1 = weapons1[weapon1_index]
+				elif event.key == K_z :
+					weapon2_index = (weapon2_index +1) % len(weapons2)
+					player.weapon2 = weapons2[weapon2_index]
+
+
 
 
 			if event.type == MOUSEMOTION :
@@ -131,7 +142,7 @@ def main(mapFilepath):
 			if event.type == MOUSEBUTTONDOWN :
 				if event.button == 1:
 					g.LEFT_CLICK = True
-					if geo.distance(player.pos, cursor.pos) <= player.weapon.weapon_range :
+					if geo.distance(player.pos, cursor.pos) <= player.weapon1.weapon_range :
 						player.left_click(cursor.rect.topleft)
 				elif event.button == 4 :
 					player.rotateLeft()
@@ -140,11 +151,15 @@ def main(mapFilepath):
 			elif event.type == MOUSEBUTTONUP :
 				if event.button == 1:
 					g.LEFT_CLICK = False
-					player.weapon.deactivate()
+					player.weapon1.deactivate()
 		if g.K_RIGHT :
-			player.goRight()
+			if g.TIMEON:
+				player.goRight()
+
+
 		if g.K_LEFT:
-			player.goLeft()
+			if g.TIMEON:
+				player.goLeft()
 
 		# if pygame.sprite.spritecollideany(player.feet, ledgeGroup):
 		# 	player.onLedge = True
@@ -206,6 +221,7 @@ def main(mapFilepath):
 		g.TO_DESTROY = []
 		# take a time step in box2d engine
 		_world.Step(TIME_STEP, 10, 10)
+		gui.update()
 		allGroup.draw(screen)
 		pygame.display.flip()
 

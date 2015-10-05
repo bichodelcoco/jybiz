@@ -167,8 +167,10 @@ class Player(AnimatedUnit):
 		self.jump_elapsedTime = 0.0
 		self.timeSinceShot = 0.0
 
-		self.weapon = Hadouken(self)
-		self.timeSinceShot = 0.0
+		self.weapon1 = Hadouken(self)
+		self.weapon2 = Grenade(self)
+		self.timeSinceShot1 = 0.0
+		self.timeSinceShot2 = 0.0
 
 		self.groups = allGroup, unitGroup
 		AnimatedUnit.__init__(self,world, pos, maxSpeed = 30, accel = 120, maxHitpoints = 300)
@@ -198,8 +200,8 @@ class Player(AnimatedUnit):
 		AnimatedUnit.update(self, seconds)
 
 	def left_click(self, mousePos):
-		if self.timeSinceShot >= self.weapon.cooldown :
-			self.weapon.activate(mousePos)
+		if self.timeSinceShot1 >= self.weapon1.cooldown :
+			self.weapon1.activate(mousePos)
 			self.timeSinceShot = 0.0
 
 	def right_click(self, mousePos):

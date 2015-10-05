@@ -5,6 +5,8 @@ import spritesheet
 import geo
 
 
+
+
 from Box2D.b2 import *
 
 
@@ -27,6 +29,7 @@ BLUE        = (   0,   0, 255)
 BRIGHTGREEN = (  50, 228,  25)
 GREY        = ( 128, 128, 128)
 BROWN       = (165,42,42)
+SPRITEGREEN = (76,255,0)
 
 
 allGroup = pygame.sprite.LayeredUpdates()
@@ -39,6 +42,7 @@ reboundGroup = pygame.sprite.Group()
 hoverGroup = pygame.sprite.Group()
 unitGroup = pygame.sprite.Group()
 playerGroup = pygame.sprite.Group()
+guiGroup = pygame.sprite.Group()
 
 class g(object):
 	TO_DESTROY = []
@@ -51,6 +55,7 @@ class g(object):
 	scrollStepy = 3
 	BIGMAP_WIDTH=1440
 	BIGMAP_HEIGHT=900
+	TIMEON = True
 
 	#keys
 	K_RIGHT = False
@@ -101,6 +106,10 @@ def findColor(temp):
 		return BLUE
 	elif temp == 4:
 		return GREEN
+
+def setColorkey(image):
+	image.set_colorkey(image.get_at((0,0)))
+	
 
 # Cursor
 # ----------------------------------------------------------
