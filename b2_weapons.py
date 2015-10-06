@@ -6,13 +6,14 @@ class Weapon(object):
 		self.weapon_range = weapon_range
 		self.cooldown = cooldown
 
-	def deactivate(self):
+	def deactivate(self, mousePos):
 		pass
 
 class Projectile(GameObject):
 	''' PROJECTILE.IMAGE0 SHOLD BE HORIZONTAL FACING RIGHT'''
 
-	def __init__(self, world, owner, size, startingPos,  startingImpulse, bullet=False, image0= None,lifetime = -1, density=1, boxShape = True, angle = 0,damage = 1,targetGroup = enemyGroup):
+	def __init__(self, world, owner, size, startingPos,  startingImpulse, bullet=False, image0= None,lifetime = -1, density=1,
+	 boxShape = True, angle = 0,collisiondamage = 0.1, damage = 5,targetGroup = enemyGroup):
 		self.world = world
 		self.owner = owner
 		self.startingPos = startingPos
@@ -21,8 +22,10 @@ class Projectile(GameObject):
 		self.lifetime= lifetime
 		self.alivetime = 0.0
 		self.targetGroup = targetGroup
+		self.collisiondamage = collisiondamage
 		self.damage = damage
 		self.image0 = image0
+
 
 		if boxShape :
 			self.body = world.CreateDynamicBody(position = pygame_to_box2d(startingPos), bullet=bullet)
@@ -40,13 +43,17 @@ class Projectile(GameObject):
 
 		collidegroup = pygame.sprite.spritecollide(self, self.targetGroup, False)
 		if collidegroup:
-			speed = geo.absolute(self.vel.x + self.vel.y)
+			
 			for unit in collidegroup :
-
-				unit.loseHitpoints(speed*self.damage)
+				
+				self.hit(unit)
 
 	def die(self):
 		self.kill()
+
+	def hit(self, unit):
+		collisionspeed = geo.absolute(self.vel.x+unit.vel.x + self.vel.y+unit.vel.y)
+		unit.loseHitpoints(collisionspeed*self.collisiondamage+self.damage)
 
 
 
@@ -54,19 +61,37 @@ class Projectile(GameObject):
 #-----------------------------------------------------------------------------------------------
 class BaseballBat(Weapon):
 	name = 'Bat'
-	def __init__(self, owner, power= 1000, aoe = (50,50), weapon_range = 200):
+	def __init__(self, owner, power= 1000, aoe = (100,100), weapon_range = 150, maxChargeTime = 6.0, maxDamage = 100):
 		Weapon.__init__(self,owner, weapon_range)
 		self.power = power
 		self.aoe = aoe
-
-
+		self.timer = Timer()
+		self.maxChargeTime = maxChargeTime
+		self.activated = False
+		self.maxDamage = maxDamage
 	def activate(self, mousePos):
-		area = AOE(mousePos, self.aoe)
-		collidegroup = pygame.sprite.spritecollide(area, enemyGroup, False)
-		vec = geo.normalizeVector(mousePos[0]- self.owner.rect.centerx, mousePos[1]- self.owner.rect.centery)
-		for item in collidegroup :
-			item.fixture.body.ApplyLinearImpulse(pygameVec_to_box2dVec((vec[0]*self.power,vec[1]*self.power)), item.fixture.body.worldCenter, wake = True)
-		area.kill()
+		self.timer.reset()
+		g.TIMERS.append(self.timer)
+		self.activated = True
+
+
+	def deactivate(self, mousePos):
+		if self.activated :
+			chargeTime = geo.minimum(self.timer.elapsedTime, self.maxChargeTime)
+			g.TIMERS.remove(self.timer)
+
+			chargeStr = geo.maximum(chargeTime / self.maxChargeTime, 0.1)
+
+
+
+			area = AOE(mousePos, self.aoe)
+			collidegroup = pygame.sprite.spritecollide(area, enemyGroup, False)
+			vec = geo.normalizeVector(mousePos[0]- self.owner.rect.centerx, mousePos[1]- self.owner.rect.centery)
+			for item in collidegroup :
+				item.body.ApplyLinearImpulse(pygameVec_to_box2dVec((vec[0]*self.power*chargeStr,vec[1]*self.power*chargeStr)), item.fixture.body.worldCenter, wake = True)
+				item.loseHitpoints(chargeStr*2 * self.maxDamage)
+			area.kill()
+			self.activated = False
 
 # Grenade
 # -------------------------------------------------------------------------------------------------
@@ -100,7 +125,7 @@ class Grenade(Weapon):
 
 class Projectile_Grenade(Projectile):
 	image0 = None
-	def __init__(self, owner, pos, power = 40, blast_aoe = (200,200),blast_power = 500):
+	def __init__(self, owner, pos, power = 40, blast_aoe = (200,200),blast_power = 500, collisiondamage = 0.1, damage = 0):
 		# image loading management
 		if Projectile_Grenade.image0 == None :
 			Projectile_Grenade.image0 = pygame.image.load('images/weapons/grenade.png')
@@ -116,7 +141,7 @@ class Projectile_Grenade(Projectile):
 		self.impulse = (vec[0]*power, vec[1]*power)
 		startingPos = (vec[0]*50 +owner.pos[0], vec[1]*50+ owner.pos[1])
 
-		Projectile.__init__(self, owner.world,owner, Grenade.size, startingPos, self.impulse, image0 = Projectile_Grenade.image0,lifetime = 3)
+		Projectile.__init__(self, owner.world,owner, Grenade.size, startingPos, self.impulse, image0 = Projectile_Grenade.image0,lifetime = 3, collisiondamage= collisiondamage, damage = damage)
 
 
 	def die(self):
@@ -137,7 +162,7 @@ class Projectile_Grenade(Projectile):
 
 class Rifle(Weapon):
 	name = 'Rifle'
-	start_range = 20
+	start_range = 5
 	size = (5,5)
 	weapon_range = 1000
 	def __init__(self, owner, power = 150):
@@ -163,7 +188,7 @@ class Rifle(Weapon):
 # ------------------------------------------------------------------------------------------------------------------
 class Projectile_Rifle(Projectile):
 	image0 = None
-	def __init__(self, owner, pos, power = 150, damage = 0.2):
+	def __init__(self, owner, pos, power = 150, collisiondamage = 0.1, damage = 1):
 		# image loading management
 		if Projectile_Rifle.image0 == None :
 			Projectile_Rifle.image0 = pygame.Surface((5,5))
@@ -171,14 +196,15 @@ class Projectile_Rifle(Projectile):
 			Projectile_Rifle.image0.set_colorkey(WHITE)
 		#--------------------------
 
-
-
+	
 		self.power = power
+
 		vec = geo.normalizeVector(pos[0]- owner.pos[0], pos[1]- owner.pos[1])
 		self.impulse = (vec[0]*power, vec[1]*power)
 		startingPos = (vec[0]*50 +owner.pos[0], vec[1]*50+ owner.pos[1])
 
-		Projectile.__init__(self, owner.world,owner, Rifle.size, startingPos, self.impulse, bullet=True, image0 = Projectile_Rifle.image0,lifetime = 1, density=20, damage = damage)
+		Projectile.__init__(self, owner.world,owner, Rifle.size, startingPos, self.impulse, bullet=True, image0 = Projectile_Rifle.image0,
+			lifetime = 1, density=20,collisiondamage = collisiondamage, damage = damage)
 
 
 	def update(self, seconds):
@@ -208,7 +234,7 @@ class VampireRifle(Weapon):
 class Projectile_VampireRifle(Projectile):
 	image0 = None
 	size = (10,7)
-	def __init__(self, owner, pos, power = 150, targetGroup = playerGroup):
+	def __init__(self, owner, pos, power = 150,collisiondamage = 0.1, damage = 1, targetGroup = playerGroup):
 		# image loadinVampireg management
 		if self.image0 == None :
 			Projectile_VampireRifle.image0 = pygame.Surface(self.size)
@@ -223,7 +249,8 @@ class Projectile_VampireRifle(Projectile):
 		self.impulse = (vec[0]*power, vec[1]*power)
 		startingPos = (vec[0]*50 +owner.pos[0], vec[1]*50+ owner.pos[1])
 
-		Projectile.__init__(self, owner.world,owner, self.size, startingPos, self.impulse, bullet=True, image0 = Projectile_VampireRifle.image0,lifetime = 1, density=20, targetGroup = targetGroup)
+		Projectile.__init__(self, owner.world,owner, self.size, startingPos, self.impulse, bullet=True, 
+			image0 = Projectile_VampireRifle.image0,lifetime = 1, density=20, targetGroup = targetGroup,collisiondamage = collisiondamage, damage = damage)
 
 
 	def update(self, seconds):
@@ -261,7 +288,7 @@ class megaBall(Weapon):
 
 class Projectile_megaBall(Projectile):
 	image0 = None
-	def __init__(self, owner, pos, power = 10000, blast_aoe = (210,210), blast_power = 10):
+	def __init__(self, owner, pos, power = 10000, blast_aoe = (210,210), blast_power = 10, collisiondamage = 0, damage = 0):
 
 
 		# image loading management
@@ -331,7 +358,7 @@ class Projectile_Hadouken(Projectile):
 	image0 = None
 	size = (58,58)
 
-	def __init__(self, owner, pos, speed = 5, power = 800, recoil = 10):
+	def __init__(self, owner, pos, speed = 5, power = 800, recoil = 10, collisiondamage = 1, damage = 20):
 
 		vec = (pos[0]- owner.pos[0], pos[1]- owner.pos[1])
 		if vec[1] <= 0:
@@ -360,7 +387,8 @@ class Projectile_Hadouken(Projectile):
 		self.impulse = (vec[0]*self.power, vec[1]* self.power)
 		startingPos = (vec[0]*self.start_range + owner.pos[0], vec[1]*self.start_range + owner.pos[1])
 
-		Projectile.__init__(self, self.world, owner, self.size, startingPos, self.impulse,bullet= True, image0 = self.image0, lifetime = 1.5, boxShape = False)
+		Projectile.__init__(self, self.world, owner, self.size, startingPos, self.impulse,bullet= True, image0 = self.image0,
+		 lifetime = 1.5, boxShape = False,collisiondamage = collisiondamage, damage = damage)
 
 # Grappling Hook
 # ----------------------------------------------------------------------------------
@@ -379,7 +407,7 @@ class GrapplingHook(Weapon):
 		self.hook = Hook(self.owner, mousePos, self.pull_power)
 		self.garbage_bin.append(self.hook)
 
-	def deactivate(self):
+	def deactivate(self, mousePos):
 		for hook in self.garbage_bin :
 			hook.kill()
 			self.garbage_bin.remove(hook)
@@ -424,9 +452,9 @@ class Hook(pygame.sprite.Sprite):
 
 class BouncingBall(Weapon):
 	name = 'Bouncing'
-	start_range = 5
+	start_range = 20
 	weapon_range = 2000
-	def __init__(self, owner, power = 20, cooldown = 0.0 ):
+	def __init__(self, owner, power = 100, cooldown = 0.0 ):
 		Weapon.__init__(self, owner, self.weapon_range)
 		
 		self.power =power
@@ -442,7 +470,7 @@ class Projectile_BouncingBall(Projectile):
 	image0 = None
 	size = (30,30)
 
-	def __init__(self, owner, pos,power = 20):
+	def __init__(self, owner, pos,power = 100, collisiondamage = 1, damage = 0):
 
 		vec = (pos[0]- owner.pos[0], pos[1]- owner.pos[1])
 		if vec[1] <= 0:
@@ -471,6 +499,6 @@ class Projectile_BouncingBall(Projectile):
 		self.impulse = (vec[0]*self.power, vec[1]* self.power)
 		
 
-		Projectile.__init__(self, self.world, owner, self.size, pos, self.impulse,bullet= True, image0 = self.image0, lifetime = 15, boxShape = False)
+		Projectile.__init__(self, self.world, owner, self.size, pos, self.impulse,bullet= True, image0 = self.image0, lifetime = 15, boxShape = False,collisiondamage = collisiondamage, damage = damage)
 
 

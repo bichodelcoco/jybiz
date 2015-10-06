@@ -44,3 +44,5 @@ def absolute(a):
 	return abs(a)
 def maximum(a,b):
 	return max(a,b)
+def minimum(a,b):
+	return min(a,b)

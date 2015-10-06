@@ -44,6 +44,8 @@ unitGroup = pygame.sprite.Group()
 playerGroup = pygame.sprite.Group()
 guiGroup = pygame.sprite.Group()
 
+
+
 class g(object):
 	TO_DESTROY = []
 	LEFT_CLICK = False
@@ -56,6 +58,7 @@ class g(object):
 	BIGMAP_WIDTH=1440
 	BIGMAP_HEIGHT=900
 	TIMEON = True
+	TIMERS = []
 
 	#keys
 	K_RIGHT = False
@@ -142,7 +145,7 @@ class AOE(pygame.sprite.DirtySprite) :
 		self.image.fill(WHITE)
 		self.rect = self.image.get_rect()
 		self.pos = pos[:]
-		self.rect.center = rect(pos)
+		self.rect.center = pos[:]
 
 # Lifebar
 # --------------------------------------------------------
@@ -304,6 +307,17 @@ class GameObject(pygame.sprite.Sprite):
 
 
 
+class Timer(object):
+
+	def __init__(self):
+		self.elapsedTime = 0.0
+
+	def update(self, seconds):
+		self.elapsedTime += seconds
+	def reset(self):
+		self.elapsedTime = 0.0
+		
+
 
 
 class Crate(GameObject):
@@ -311,6 +325,7 @@ class Crate(GameObject):
 	image0.set_colorkey(WHITE)
 
 	def __init__(self,world, pos, angle = 0 ):
+		self.world = world
 		self.body = world.CreateDynamicBody(position = pygame_to_box2d(pos))
 		self.fixture = self.body.CreatePolygonFixture(box = pixel_to_meter((32,32)), density = 1, friction = 0.3, userData = self)
 		self.groups = allGroup, enemyGroup, reboundGroup, unitGroup

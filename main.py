@@ -59,10 +59,10 @@ def main(mapFilepath):
 	# add a crate
 	editor.load(mapFilepath, _world, ground)
 	
-	# crate = Crate( _world,(400,400))
-	# crate2 = Crate( _world,(200,400), (100,20))
-	# for i in xrange(200):
-	# 	Crate(_world, (randint(0, 700), randint(0, 400)))
+	crate = Crate( _world,(400,400))
+	crate2 = Crate( _world,(200,400), (100,20))
+	for i in xrange(200):
+		Crate(_world, (randint(0, 700), randint(0, 400)))
 	# ledge = Ledge(_world, ground, leftpoint = (800,600), width = 400)
 	# Ledge(_world, ground, leftpoint = (200,200), width = 500)
 	# Ledge(_world, ground, leftpoint = (500,250), width = 500)
@@ -155,7 +155,7 @@ def main(mapFilepath):
 			elif event.type == MOUSEBUTTONUP :
 				if event.button == 1:
 					g.LEFT_CLICK = False
-					player.weapon1.deactivate()
+					player.weapon1.deactivate(cursor.rect.topleft)
 				if event.button == 3:
 					g.RIGHT_CLICK = False
 					player.weapon2.deactivate()
@@ -226,6 +226,9 @@ def main(mapFilepath):
 			_world.DestroyBody(body)
 			g.TO_DESTROY.remove(body)
 		g.TO_DESTROY = []
+
+		for timer in g.TIMERS :
+			timer.update(seconds)
 		# take a time step in box2d engine
 		_world.Step(TIME_STEP, 10, 10)
 		gui.update()
