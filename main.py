@@ -1,4 +1,4 @@
-from random import *
+import random as rd
 import pygame
 from pygame.locals import *
 
@@ -34,7 +34,7 @@ def main(mapFilepath):
 	screen=pygame.display.set_mode((SCREEN_WIDTH,SCREEN_HEIGHT), 0, 32)
 	pygame.display.set_caption('Simple pygame example')
 	clock=pygame.time.Clock()
-	seed()
+	rd.seed()
 
 	bigmap = pygame.Surface((g.BIGMAP_WIDTH+SCREEN_WIDTH, g.BIGMAP_HEIGHT+SCREEN_HEIGHT))
 	bigmap.fill(WHITE)
@@ -61,8 +61,8 @@ def main(mapFilepath):
 	
 	crate = Crate( _world,(400,400))
 	crate2 = Crate( _world,(200,400), (100,20))
-	for i in xrange(200):
-		Crate(_world, (randint(0, 700), randint(0, 400)))
+	# for i in xrange(200):
+	# 	Crate(_world, (rd.randint(0, 700), rd.randint(0, 400)))
 	# ledge = Ledge(_world, ground, leftpoint = (800,600), width = 400)
 	# Ledge(_world, ground, leftpoint = (200,200), width = 500)
 	# Ledge(_world, ground, leftpoint = (500,250), width = 500)
@@ -71,12 +71,13 @@ def main(mapFilepath):
 	# --------------------------------------------------------
 	# --- Game setup -----------------------------------------
 	mainLoop = True
-	player = Player(_world, (600,400))
+	player = Player(_world, (100,100))
 	# vampire1 = Vampire(_world, (800, 400), target = player)
-	zombie = Zombie(_world, (800,400), target =player)
-	Zombie(_world, (900,300), target =player)
-	Zombie(_world, (1100,400), target =player)
-	Zombie(_world, (1000,200), target =player)
+	# zombie = Zombie(_world, (800,400), target =player)
+	# Zombie(_world, (900,300), target =player)
+	# Zombie(_world, (1100,400), target =player)
+	# Zombie(_world, (1000,200), target =player)
+	Skull(_world, (600,600))
 	scrollx = 0
 	scrolly = 0
 

@@ -3,6 +3,7 @@ import Box2D
 import math
 import spritesheet
 import geo
+import random
 
 
 
@@ -15,7 +16,7 @@ from Box2D.b2 import *
 PPM= 20.0 # pixels per meter
 TARGET_FPS=60
 TIME_STEP=1.0/TARGET_FPS
-SCREEN_WIDTH, SCREEN_HEIGHT=800,600
+SCREEN_WIDTH, SCREEN_HEIGHT=1440,900
 
 FILEPATH = 'tt.db'
 
@@ -43,6 +44,8 @@ hoverGroup = pygame.sprite.Group()
 unitGroup = pygame.sprite.Group()
 playerGroup = pygame.sprite.Group()
 guiGroup = pygame.sprite.Group()
+
+
 
 
 
@@ -111,7 +114,11 @@ def findColor(temp):
 		return GREEN
 
 def setColorkey(image):
+
 	image.set_colorkey(image.get_at((0,0)))
+def setColorkeyList(imageList):
+	for image in imageList:
+		setColorkey(image)
 	
 
 # Cursor
@@ -256,23 +263,6 @@ class GameObject(pygame.sprite.Sprite):
 
 
 
-
-
-
-
-
-	def stand(self):
-		desiredVel=10
-		#if 0<=self.fixture.body.angle<math.pi:
-		if 10<self.angle<350:
-			self.standing=True
-
-			velChange = desiredVel - self.fixture.body.angularVelocity
-			self.fixture.body.angularVelocity=desiredVel
-			#self.fixture.body.ApplyTorque(velChange*self.fixture.body.mass, wake = True)
-		# elif math.pi<self.fixture.body.angle<2*math.pi:
-		# 	velChange = -desiredVel - self.fixture.body.angularVelocity
-		# 	self.fixture.body.ApplyTorque(velChange*self.fixture.body.mass, wake = True)
 
 	def hover(self):
 		pass
