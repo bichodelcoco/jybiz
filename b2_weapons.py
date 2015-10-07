@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+'''pour que python casse pas les couilles avec les accents !! éééééèèèèè'''
 from b2_classes import *
 
 class Weapon(object):
@@ -10,7 +12,7 @@ class Weapon(object):
 		pass
 
 class Projectile(GameObject):
-	''' PROJECTILE.IMAGE0 SHOLD BE HORIZONTAL FACING RIGHT'''
+	''' PROJECTILE.IMAGE0 SHOULD BE HORIZONTAL FACING RIGHT'''
 
 	def __init__(self, world, owner, size, startingPos,  startingImpulse, bullet=False, image0= None,lifetime = -1, density=1,
 	 boxShape = True, angle = 0,collisiondamage = 0.1, damage = 5,targetGroup = enemyGroup):
@@ -43,9 +45,9 @@ class Projectile(GameObject):
 
 		collidegroup = pygame.sprite.spritecollide(self, self.targetGroup, False)
 		if collidegroup:
-			
+
 			for unit in collidegroup :
-				
+
 				self.hit(unit)
 
 	def die(self):
@@ -196,7 +198,7 @@ class Projectile_Rifle(Projectile):
 			Projectile_Rifle.image0.set_colorkey(WHITE)
 		#--------------------------
 
-	
+
 		self.power = power
 
 		vec = geo.normalizeVector(pos[0]- owner.pos[0], pos[1]- owner.pos[1])
@@ -249,7 +251,7 @@ class Projectile_VampireRifle(Projectile):
 		self.impulse = (vec[0]*power, vec[1]*power)
 		startingPos = (vec[0]*50 +owner.pos[0], vec[1]*50+ owner.pos[1])
 
-		Projectile.__init__(self, owner.world,owner, self.size, startingPos, self.impulse, bullet=True, 
+		Projectile.__init__(self, owner.world,owner, self.size, startingPos, self.impulse, bullet=True,
 			image0 = Projectile_VampireRifle.image0,lifetime = 1, density=20, targetGroup = targetGroup,collisiondamage = collisiondamage, damage = damage)
 
 
@@ -454,15 +456,15 @@ class BouncingBall(Weapon):
 	name = 'Bouncing'
 	start_range = 20
 	weapon_range = 2000
-	def __init__(self, owner, power = 100, cooldown = 0.0 ):
+	def __init__(self, owner, power = 500, cooldown = 0.0 ):
 		Weapon.__init__(self, owner, self.weapon_range)
-		
+
 		self.power =power
 		self.cooldown = cooldown
 
 	def activate(self, mousePos):
 		vec =  geo.normalizeVector(mousePos[0]- self.owner.rect.centerx, mousePos[1]- self.owner.rect.centery)
-		
+
 		pos = (self.owner.pos[0] + self.start_range*vec[0],self.owner.pos[1] + self.start_range*vec[1])
 		Projectile_BouncingBall(self.owner, pos, power= self.power)
 
@@ -470,7 +472,7 @@ class Projectile_BouncingBall(Projectile):
 	image0 = None
 	size = (30,30)
 
-	def __init__(self, owner, pos,power = 100, collisiondamage = 1, damage = 0):
+	def __init__(self, owner, pos,power = 500, collisiondamage = 1, damage = 0):
 
 		vec = (pos[0]- owner.pos[0], pos[1]- owner.pos[1])
 		if vec[1] <= 0:
@@ -484,11 +486,11 @@ class Projectile_BouncingBall(Projectile):
 			#Projectile_BouncingBall.image0 = pygame.transform.rotate(Projectile_BouncingBall.image0, self.angle)
 			setColorkey(Projectile_BouncingBall.image0)
 
-		
+
 		#--------------------------
 
 		self.power = power
-		
+
 
 		self.world = owner.world
 		self.body = self.world.CreateDynamicBody(position = pygame_to_box2d(pos), bullet = True, angle = self.angle)
@@ -497,8 +499,116 @@ class Projectile_BouncingBall(Projectile):
 
 		vec = geo.normalizeVector(pos[0]- owner.pos[0], pos[1]- owner.pos[1])
 		self.impulse = (vec[0]*self.power, vec[1]* self.power)
-		
+
 
 		Projectile.__init__(self, self.world, owner, self.size, pos, self.impulse,bullet= True, image0 = self.image0, lifetime = 15, boxShape = False,collisiondamage = collisiondamage, damage = damage)
 
 
+
+
+class FragmentedBall(Weapon):
+	name = 'Frag' # =========> le Name doit etre 'petit' (moins de jsais pas 10 characters) sinon ca bug jsuis flemmé de faire un truc pour le text:)
+	start_range = 5
+	weapon_range = 2000
+	def __init__(self, owner, power = 1000, cooldown = 0.0 ): # power = force a laquelle l'item est projeté
+		Weapon.__init__(self, owner, self.weapon_range)
+
+		self.power =power
+		self.cooldown = cooldown
+
+	def activate(self, mousePos):
+		vec =  geo.normalizeVector(mousePos[0]- self.owner.rect.centerx, mousePos[1]- self.owner.rect.centery) #calcule le vecteur entre le cursor et le owner de l'arme (pour la direction et position)
+
+		pos = (self.owner.pos[0] + self.start_range*vec[0],self.owner.pos[1] + self.start_range*vec[1]) # position = position de l'owner + la startrange (dans la direction de la souris par vec)
+		Projectile_FragmentedBall1(self.owner, pos) #init du projectile avec pos et power
+
+
+class Projectile_FragmentedBall1(Projectile):
+	image0 = None
+	size = (48,48)
+
+	def __init__(self, owner, pos,power = 1000, collisiondamage = 10, damage = 0):
+
+		vec = (pos[0]- owner.pos[0], pos[1]- owner.pos[1])
+		if vec[1] <= 0:
+			self.angle =geo.vecAngle((1,0), vec)
+		else :
+			self.angle = -geo.vecAngle((1,0), vec)
+
+		# image loading management
+		if Projectile_FragmentedBall1.image0 == None :
+			Projectile_FragmentedBall1.image0= pygame.image.load('images/weapons/fragBall1_48.png').convert()
+			#Projectile_BouncingBall.image0 = pygame.transform.rotate(Projectile_BouncingBall.image0, self.angle)
+			setColorkey(Projectile_FragmentedBall1.image0)
+
+
+		#--------------------------
+
+		self.power = power
+
+		self.world = owner.world
+		self.body = self.world.CreateDynamicBody(position = pygame_to_box2d(pos), angle = self.angle)
+		self.fixture = self.body.CreateCircleFixture(radius = real_pixel_to_meter(24), density = 5, friction = 0, userData = self)
+
+
+		vec = geo.normalizeVector(pos[0]- owner.pos[0], pos[1]- owner.pos[1])
+		self.impulse = (vec[0]*self.power, vec[1]* self.power)
+
+
+		Projectile.__init__(self, self.world, owner, self.size, pos, self.impulse, image0 = self.image0, lifetime = 0.3, boxShape = False,collisiondamage = collisiondamage, damage = damage)
+
+
+	def die(self):
+
+		for i in [-1,0,1]:
+			frag_angle=i*45
+			global frag_angle
+			end_pos_frag=self.pos
+			Projectile_FragmentedBall2(self.owner, end_pos_frag) #utiliser angle_frag pour l'angle dans fragball2
+
+		Projectile.die(self)
+
+
+
+class Projectile_FragmentedBall2(Projectile):
+	image0 = None
+	size = (16,16)
+
+	def __init__(self, owner, pos,power = 333, collisiondamage = 10, damage = 0):
+
+		vec = (pos[0]- owner.pos[0], pos[1]- owner.pos[1])
+		if vec[1] <= 0:
+			self.angle =geo.vecAngle((1,0), vec)
+		else :
+			self.angle = -geo.vecAngle((1,0), vec)
+
+		# image loading management
+		if Projectile_FragmentedBall2.image0 == None :
+			Projectile_FragmentedBall2.image0= pygame.image.load('images/weapons/fragBall2_16.png').convert()
+			#Projectile_BouncingBall.image0 = pygame.transform.rotate(Projectile_BouncingBall.image0, self.angle)
+			setColorkey(Projectile_FragmentedBall2.image0)
+
+
+		#--------------------------
+
+		self.power = power
+
+
+		self.world = owner.world
+		self.body = self.world.CreateDynamicBody(position = pygame_to_box2d(pos), angle = self.angle)
+		self.fixture = self.body.CreateCircleFixture(radius = real_pixel_to_meter(8), density = 10, friction = 0, userData = self)
+
+
+		vec = geo.normalizeVector(pos[0]- owner.pos[0], pos[1]- owner.pos[1])
+
+		x_temp=vec[0]*self.power #par flemme
+		y_temp=vec[1]*self.power
+		norme=geo.vectorLength(xtemp,ytemp)
+		if x_temp==0: #pour pas diviser par 0
+			theta=45
+		else:
+			theta=math.atan(y_temp/x_temp)
+		self.impulse = (norme*math.cos(theta+frag_angle), norme*math.sin(theta+frag_angle))
+
+
+		Projectile.__init__(self, self.world, owner, self.size, pos, self.impulse, image0 = self.image0, lifetime = 0.5, boxShape = False,collisiondamage = collisiondamage, damage = damage)

@@ -15,7 +15,7 @@ FAIT UN PEU DU 7. et 8. QUAND TA LA NON FLEMME PCQ C CHIANT
 	implementer monster spawn
 	implémenter freeBuild
 	implémenter Drag after build
-	implémenter player spawn
+	!!! implémenter player spawn
 4. trouver un bon sprite temporaire (ou définitif) pour le player pour pouvoir mieux test le gameplay
 5. trouver idées :
 	armes:
