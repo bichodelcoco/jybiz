@@ -10,7 +10,7 @@ COLOR = 2
 
 ''' ------------ GUI ---------- '''
 class EditorGUI(object): #contains value boxes
-	
+
 	def __init__(self, world = None, ground = None, item = None):
 
 		self.world = world
@@ -56,7 +56,7 @@ class EditorGUI(object): #contains value boxes
 	def build(self, mousePos):
 		values = [0 for i in xrange(10)]
 		if self.item.__name__ == 'Ledge':
-			
+
 			for i in xrange(5):
 				temp = self.slots[i].output()
 				if temp:
@@ -103,7 +103,7 @@ class EditorGUI(object): #contains value boxes
 	def update(self):
 		if self.item != self.displayedItem:
 			self.loadItem(self.item)
-		
+
 
 	def run(self):
 		if self.visible :
@@ -197,7 +197,7 @@ class ValueBox(pygame.sprite.Sprite):
 					value_index +=1
 			value_index += 1
 			if value_index == 2 :
-				
+
 				return (self.value_strings[0],self.value_strings[1])
 			if value_index == 3:
 				print (self.value_strings[0],self.value_strings[1], self.value_strings[2])
@@ -224,7 +224,7 @@ class ValueBox(pygame.sprite.Sprite):
 # 		self.font = pygame.font.SysFont('None', fontSize)
 
 # 		self.rect = pygame.Rect(pos, (width, height))
-		
+
 # 		self.text = text
 # 		self.background_color = background_color
 # 		self.old_color = self.background_color
@@ -242,7 +242,7 @@ class TextBox(pygame.sprite.Sprite):
 		self.font = pygame.font.SysFont('None', fontSize)
 
 		self.rect = pygame.Rect(pos, (width, height))
-		
+
 		self.text = text
 		self.background_color = background_color
 		self.old_color = self.background_color
@@ -293,7 +293,7 @@ class PropertyBox(object):
 
 
 
-				
+
 
 
 
@@ -301,7 +301,7 @@ class PropertyBox(object):
 class Button(pygame.sprite.Sprite): #is a button
 
 	def __init__(self, menu, pos, image0 = None, imageHover = None):
-		
+
 
 		pygame.sprite.Sprite.__init__(self)
 
@@ -365,7 +365,8 @@ class WeaponIcon(Icon):
 			imagepath = 'images/icons/hadouken_icon.png'
 		elif self.weapon.__class__.__name__== 'BouncingBall' :
 			imagepath = 'images/icons/bouncingball_icon.png'
-
+		elif self.weapon.__class__.__name__== 'FragmentedBall' :
+			imagepath = 'images/icons/frag_icon.png'
 
 
 
@@ -396,12 +397,3 @@ class GameGUI(object):
 			self.weaponslot2.kill()
 			self.weaponslot2 = WeaponIcon((SCREEN_WIDTH - 90, SCREEN_HEIGHT - 80),weapon =self.player.weapon2)
 			self.weapon2NameBox.writeText(self.player.weapon2.__class__.name)
-		
-
-
-
-
-
-	
-
-

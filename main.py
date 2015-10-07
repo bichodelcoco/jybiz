@@ -58,7 +58,7 @@ def main(mapFilepath):
 
 	# add a crate
 	editor.load(mapFilepath, _world, ground)
-	
+
 	crate = Crate( _world,(400,400))
 	crate2 = Crate( _world,(200,400), (100,20))
 	# for i in xrange(200):
@@ -81,7 +81,7 @@ def main(mapFilepath):
 	scrollx = 0
 	scrolly = 0
 
-	weapons1 = [Rifle(player), Hadouken(player), BaseballBat(player), megaBall(player),GrapplingHook(player), Grenade(player), BouncingBall(player)]
+	weapons1 = [Rifle(player), Hadouken(player), BaseballBat(player), megaBall(player),GrapplingHook(player), Grenade(player), BouncingBall(player), FragmentedBall(player)]
 	weapons2 = [megaBall(player),GrapplingHook(player), Grenade(player)]
 	weapon1_index = 0
 	weapon2_index = 0
@@ -105,10 +105,10 @@ def main(mapFilepath):
 			elif event.type == KEYDOWN :
 				if event.key == K_d :
 					g.K_RIGHT = True
-				
+
 				elif event.key == K_a :
 					g.K_LEFT = True
-					
+
 				if event.key == K_SPACE :
 					player.jump()
 				elif event.key == K_s :
@@ -175,12 +175,12 @@ def main(mapFilepath):
 		# 	player.onLedge = False
 
 
-	
-			
+
+
 
 
 		# -------- Scrolling  with keyboard------------------
-		
+
 		pressedKeys = pygame.key.get_pressed()
 		# what happens when u press an arrow to move screen
 		if pressedKeys[K_LEFT]:
@@ -194,7 +194,7 @@ def main(mapFilepath):
 		# ---- scroll the screen --------
 		g.CORNERPOINT[0] += scrollx
 		g.CORNERPOINT[1] += scrolly
-	
+
 		#----- prevent scrolling out of the map
 		if g.CORNERPOINT[0] < 0:
 			g.CORNERPOINT[0]=0
