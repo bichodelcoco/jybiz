@@ -560,11 +560,13 @@ class Projectile_FragmentedBall1(Projectile):
 
 	def die(self):
 
+
 		for i in [-1,0,1]:
 			frag_angle=i*45
 			global frag_angle
-			end_pos_frag=self.pos
+			end_pos_frag=self.pos[:]
 			Projectile_FragmentedBall2(self.owner, end_pos_frag) #utiliser angle_frag pour l'angle dans fragball2
+	
 
 		Projectile.die(self)
 
@@ -577,7 +579,9 @@ class Projectile_FragmentedBall2(Projectile):
 	def __init__(self, owner, pos,power = 333, collisiondamage = 10, damage = 0):
 
 		vec = (pos[0]- owner.pos[0], pos[1]- owner.pos[1])
-		if vec[1] <= 0:
+		if geo.vectorLength(vec[0],vec[1]) == 0:
+			self.angle = 0
+		elif vec[1] <= 0:
 			self.angle =geo.vecAngle((1,0), vec)
 		else :
 			self.angle = -geo.vecAngle((1,0), vec)
@@ -603,12 +607,12 @@ class Projectile_FragmentedBall2(Projectile):
 
 		x_temp=vec[0]*self.power #par flemme
 		y_temp=vec[1]*self.power
-		norme=geo.vectorLength(xtemp,ytemp)
+		norme=geo.vectorLength(x_temp,y_temp)
 		if x_temp==0: #pour pas diviser par 0
 			theta=45
 		else:
 			theta=math.atan(y_temp/x_temp)
-		self.impulse = (norme*math.cos(theta+frag_angle), norme*math.sin(theta+frag_angle))
-
+		self.impulse = (x_temp*math.cos(theta+frag_angle), y_temp*math.sin(theta+frag_angle))
+		
 
 		Projectile.__init__(self, self.world, owner, self.size, pos, self.impulse, image0 = self.image0, lifetime = 0.5, boxShape = False,collisiondamage = collisiondamage, damage = damage)
