@@ -17,7 +17,7 @@ from Box2D.b2 import *
 PPM= 20.0 # pixels per meter
 TARGET_FPS=60
 TIME_STEP=1.0/TARGET_FPS
-SCREEN_WIDTH, SCREEN_HEIGHT=1440,900
+SCREEN_WIDTH, SCREEN_HEIGHT=800,600
 
 FILEPATH = 'tt.db'
 
@@ -120,7 +120,7 @@ def setColorkey(image):
 def setColorkeyList(imageList):
 	for image in imageList:
 		setColorkey(image)
-	
+
 
 # Cursor
 # ----------------------------------------------------------
@@ -168,7 +168,7 @@ class Lifebar(pygame.sprite.Sprite):
 		self.distance = distance
 		self.size = size
 
-		
+
 		self.groups = allGroup
 		pygame.sprite.Sprite.__init__(self, self.groups)
 
@@ -189,7 +189,7 @@ class Lifebar(pygame.sprite.Sprite):
 
 	def refresh(self):
 		if self.percent != 1.0:
-			
+
 			pygame.draw.rect(self.image, BRIGHTGREEN,(0,0, self.size[0]*self.percent, self.size[1]))
 			pygame.draw.rect(self.image, RED, ( self.size[0]*self.percent,  0,  self.size[0]*(1-self.percent), self.size[1]))
 		else :
@@ -209,7 +209,7 @@ class GameObject(pygame.sprite.Sprite):
 
 		pygame.sprite.Sprite.__init__(self, self.groups)
 		self.pos = vec_to_coordinates(self.fixture.body.position)
-		
+
 		self.oldAngle = radians_to_degrees(self.fixture.body.angle)
 		self.angle = self.oldAngle
 		self.vel = self.fixture.body.linearVelocity
@@ -240,8 +240,8 @@ class GameObject(pygame.sprite.Sprite):
 			self.rect.center = rect(vec_to_coordinates(self.fixture.body.position))
 		else :
 			self.pos = vec_to_coordinates(self.fixture.body.position)
-		
-		
+
+
 		self.rect.center = rect(self.pos)
 
 
@@ -307,7 +307,7 @@ class Timer(object):
 		self.elapsedTime += seconds
 	def reset(self):
 		self.elapsedTime = 0.0
-		
+
 
 
 
@@ -328,7 +328,7 @@ class Crate(GameObject):
 
 
 class Barrel(GameObject):
-	
+
 
 	def __init__(self,world, pos, angle = 0 ):
 		self.body = world.CreateDynamicBody(position = pygame_to_box2d(pos))
@@ -409,7 +409,7 @@ class Ledge(GameObject):
 			upperAngle = degrees_to_radians(allowedAngle[1])
 			)
 
-	
+
 
 class Doodad(GameObject):
 
@@ -426,7 +426,7 @@ class Doodad(GameObject):
 		self.color = color
 
 
-		
+
 		self.body = world.CreateDynamicBody(position = pygame_to_box2d(leftpoint), angle = math.pi/4.0)
 		self.fixture = self.body.CreatePolygonFixture(box = pixel_to_meter((width,height)), density = density, friction = 0.3, userData = self)
 
@@ -460,6 +460,3 @@ class StaticObject(pygame.sprite.Sprite): #used for world boundaries and the lik
 	def update(self,seconds):
 
 		self.rect.topleft = rect(self.leftpoint)
-
-
-

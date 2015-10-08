@@ -85,7 +85,7 @@ def main(mapFilepath):
 	scrollx = 0
 	scrolly = 0
 
-	weapons1 = [Rifle(player), Hadouken(player), BaseballBat(player), megaBall(player),GrapplingHook(player), Grenade(player), BouncingBall(player), FragmentedBall(player)]
+	weapons1 = [Rifle(player), Hadouken(player), BaseballBat(player), megaBall(player),GrapplingHook(player), Grenade(player), BouncingBall(player), FragmentedBall(player), MiniBouncingBall(player)]
 	weapons2 = [megaBall(player),GrapplingHook(player), Grenade(player)]
 	weapon1_index = 0
 	weapon2_index = 0
