@@ -443,7 +443,7 @@ class Skull(EnemyUnit):
 		EnemyUnit.update(self, seconds)
 
 	def charge(self, pos, speed_factor, distance = 10):
-
+		
 		if geo.distance_oneDim(pos[0], self.pos[0]) > distance:
 			if pos[0] - self.pos[0] >= 0:
 				self.custom_goRight(self.chargeMaxSpeed, speed_factor*self.accel)
@@ -451,7 +451,7 @@ class Skull(EnemyUnit):
 				self.custom_goLeft(self.chargeMaxSpeed, speed_factor*self.accel)
 		else :
 			self.slow_x()
-			self.chargeTime = 0.0
+			
 		if geo.distance_oneDim(pos[1], self.pos[1]) > distance:
 			if pos[1] - self.pos[1] <= 0:
 				self.flyUp(self.chargeMaxSpeed, speed_factor*self.accel)
@@ -460,6 +460,8 @@ class Skull(EnemyUnit):
 		else :
 			self.slow_y()
 
+		if geo.distance(pos, self.pos) <= 60 :
+			self.chargeTime = 0.0
 	def loadImages(self):
 		if self.img_standingRight == None :
 			Skull.img_standingRight = [pygame.image.load('images/skull/noeyes.png').convert()]

@@ -9,7 +9,7 @@ class MonsterSpawn(object):
 		self.pos = pos
 		self.monsterClass = monsterClass
 		self.monsterValues = monsterValues
-		self.monster_frequency = monster_frequency
+		self.monster_cooldown = monster_cooldown
 		self.duration = duration
 		self.elapsedTime = 0.0
 		if online :
@@ -24,7 +24,7 @@ class MonsterSpawn(object):
 
 	def spawn(self):
 		if self.monsterClass.__name__ == 'Skull' :
-			if monsterValues = []:
+			if self.monsterValues == []:
 				Skull(self.world, self.pos,attack_range = 400, maxSpeed = 30, accel = 120, target = None)
 			else :
 				Skull(self.world, self.pos,attack_range = monsterValues[0], maxSpeed = monsterValues[1], accel = monsterValues[2], target = monsterValues[3])
@@ -32,8 +32,8 @@ class MonsterSpawn(object):
 
 
 	def turnOn(self):
-		if self not in g.TIMER:
-			g.TIMER.append(self)
+		if self not in g.TIMERS:
+			g.TIMERS.append(self)
 	def turnOff(self):
-		if self in g.TIMER:
-			g.TIMER.remove(self)
+		if self in g.TIMERS:
+			g.TIMERS.remove(self)

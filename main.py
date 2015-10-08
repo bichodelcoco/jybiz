@@ -8,6 +8,9 @@ from Box2D.b2 import * # maps b2Vec b2World to vec, world etc
 from b2_classes import *
 from b2_units import *
 from b2_weapons import *
+from b2_terrain import *
+
+
 import editor
 import GUI
 
@@ -78,6 +81,7 @@ def main(mapFilepath):
 	# Zombie(_world, (1100,400), target =player)
 	# Zombie(_world, (1000,200), target =player)
 	Skull(_world, (600,600))
+	MonsterSpawn(_world, (700,700), Skull, monster_cooldown = 0.5, duration = -1, online = True)
 	scrollx = 0
 	scrolly = 0
 
