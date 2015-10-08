@@ -555,18 +555,17 @@ class Projectile_FragmentedBall1(Projectile):
 		self.impulse = (vec[0]*self.power, vec[1]* self.power)
 
 
-		Projectile.__init__(self, self.world, owner, self.size, pos, self.impulse, image0 = self.image0, lifetime = 0.3, boxShape = False,collisiondamage = collisiondamage, damage = damage)
+		Projectile.__init__(self, self.world, owner, self.size, pos, self.impulse, image0 = self.image0, lifetime = 0.1, boxShape = False,collisiondamage = collisiondamage, damage = damage)
 
 
 	def die(self):
 
 
 		for i in [-1,0,1]:
-			frag_angle=i*45
-			global frag_angle
+			frag_angle=i*(math.pi/4)
 			end_pos_frag=self.pos[:]
-			Projectile_FragmentedBall2(self.owner, end_pos_frag) #utiliser angle_frag pour l'angle dans fragball2
-	
+			Projectile_FragmentedBall2(self.owner, end_pos_frag, frag_angle=frag_angle) #utiliser angle_frag pour l'angle dans fragball2
+
 
 		Projectile.die(self)
 
@@ -574,9 +573,12 @@ class Projectile_FragmentedBall1(Projectile):
 
 class Projectile_FragmentedBall2(Projectile):
 	image0 = None
-	size = (16,16)
 
-	def __init__(self, owner, pos,power = 333, collisiondamage = 10, damage = 0):
+	def __init__(self, owner, pos,power = 333, collisiondamage = 10, damage = 0, frag_angle=0, second_round=False):
+		if second_round==False:
+			self.size = (32,32)
+		else:
+			self.size=(16,16)
 
 		vec = (pos[0]- owner.pos[0], pos[1]- owner.pos[1])
 		if geo.vectorLength(vec[0],vec[1]) == 0:
@@ -587,32 +589,50 @@ class Projectile_FragmentedBall2(Projectile):
 			self.angle = -geo.vecAngle((1,0), vec)
 
 		# image loading management
-		if Projectile_FragmentedBall2.image0 == None :
+		if Projectile_FragmentedBall2.image0 == None or second_round==False:
+			Projectile_FragmentedBall2.image0= pygame.image.load('images/weapons/fragBall2_32.png').convert()
+			#Projectile_BouncingBall.image0 = pygame.transform.rotate(Projectile_BouncingBall.image0, self.angle)
+			setColorkey(Projectile_FragmentedBall2.image0)
+		elif second_round==True:
 			Projectile_FragmentedBall2.image0= pygame.image.load('images/weapons/fragBall2_16.png').convert()
 			#Projectile_BouncingBall.image0 = pygame.transform.rotate(Projectile_BouncingBall.image0, self.angle)
 			setColorkey(Projectile_FragmentedBall2.image0)
 
 
+
 		#--------------------------
 
-		self.power = power
 
-
+		self.second_round=second_round
 		self.world = owner.world
-		self.body = self.world.CreateDynamicBody(position = pygame_to_box2d(pos), angle = self.angle)
-		self.fixture = self.body.CreateCircleFixture(radius = real_pixel_to_meter(8), density = 10, friction = 0, userData = self)
-
+		temp_pos=pygame_to_box2d(pos)
+		self.body = self.world.CreateDynamicBody(position = temp_pos, angle = self.angle)
+		if second_round==False:
+			self.fixture = self.body.CreateCircleFixture(radius = real_pixel_to_meter(16), density = 10, friction = 0, userData = self)
+			self.power = power*2
+		else:
+			self.fixture = self.body.CreateCircleFixture(radius = real_pixel_to_meter(8), density = 10, friction = 0, userData = self)
+			self.power=power
 
 		vec = geo.normalizeVector(pos[0]- owner.pos[0], pos[1]- owner.pos[1])
 
-		x_temp=vec[0]*self.power #par flemme
-		y_temp=vec[1]*self.power
-		norme=geo.vectorLength(x_temp,y_temp)
-		if x_temp==0: #pour pas diviser par 0
-			theta=45
-		else:
-			theta=math.atan(y_temp/x_temp)
-		self.impulse = (x_temp*math.cos(theta+frag_angle), y_temp*math.sin(theta+frag_angle))
-		
+		rotated=geo.rotation(vec, frag_angle)
 
-		Projectile.__init__(self, self.world, owner, self.size, pos, self.impulse, image0 = self.image0, lifetime = 0.5, boxShape = False,collisiondamage = collisiondamage, damage = damage)
+		self.impulse = rotated[0]*self.power, rotated[1]*self.power
+		
+		if second_round==False:
+			Projectile.__init__(self, self.world, owner, self.size, pos, self.impulse, image0 = self.image0, lifetime = 0.2, boxShape = False,collisiondamage = collisiondamage, damage = damage)
+		else:
+			Projectile.__init__(self, self.world, owner, self.size, pos, self.impulse, image0 = self.image0, lifetime = 0.4, boxShape = False,collisiondamage = collisiondamage, damage = damage)
+
+	def die(self):
+		if self.second_round==False:
+			for i in [-1,0,1]:
+				frag_angle=i*(math.pi/4)
+				end_pos_frag=self.pos[:]
+				Projectile_FragmentedBall2(self.owner, end_pos_frag, frag_angle=frag_angle, second_round=True) #utiliser angle_frag pour l'angle dans fragball2
+
+
+			Projectile.die(self)
+		else:
+			Projectile.die(self)

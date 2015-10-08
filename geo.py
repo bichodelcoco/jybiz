@@ -32,7 +32,7 @@ def distance(a,b):
 def distance_oneDim(a,b):
 	return abs(a-b)
 
-	
+
 #def write(msg, color):
 
 def diagonalDistance(a,b) : #Movement cost D = 10, diagonal 14 (aprrox sqrt(2)*D)
@@ -46,3 +46,6 @@ def maximum(a,b):
 	return max(a,b)
 def minimum(a,b):
 	return min(a,b)
+
+def rotation((a,b),theta):
+    return (a*math.cos(theta)-b*math.sin(theta), a*math.sin(theta)+b*math.cos(theta)) ''' /!\ theta must be in rad not degrees'''
