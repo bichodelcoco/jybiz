@@ -48,4 +48,5 @@ def minimum(a,b):
 	return min(a,b)
 
 def rotation((a,b),theta):
-    return (a*math.cos(theta)-b*math.sin(theta), a*math.sin(theta)+b*math.cos(theta)) ''' /!\ theta must be in rad not degrees'''
+    ''' /!\ theta must be in rad not degrees'''
+    return (a*math.cos(theta)-b*math.sin(theta), a*math.sin(theta)+b*math.cos(theta))

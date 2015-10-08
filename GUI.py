@@ -367,7 +367,8 @@ class WeaponIcon(Icon):
 			imagepath = 'images/icons/bouncingball_icon.png'
 		elif self.weapon.__class__.__name__== 'FragmentedBall' :
 			imagepath = 'images/icons/frag_icon.png'
-
+		elif self.weapon.__class__.__name__== 'MiniBouncingBall' :
+			imagepath = 'images/icons/minibouncingball_icon.png'
 
 
 		Icon.__init__(self, pos, imagepath)
