@@ -220,6 +220,7 @@ class GameObject(pygame.sprite.Sprite):
 
 		self.image = pygame.transform.rotate(self.image0, self.angle).convert()
 		self.rect = self.image.get_rect()
+		self.rect.center = rect(vec_to_coordinates(self.fixture.body.position))
 
 		hoverGroup.add(self)
 
