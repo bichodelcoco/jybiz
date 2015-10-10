@@ -203,7 +203,7 @@ class Projectile_Rifle(Projectile):
 
 		vec = geo.normalizeVector(pos[0]- owner.pos[0], pos[1]- owner.pos[1])
 		self.impulse = (vec[0]*power, vec[1]*power)
-		startingPos = (vec[0]*50 +owner.pos[0], vec[1]*50+ owner.pos[1])
+		startingPos = (vec[0]*Rifle.start_range +owner.pos[0], vec[1]*Rifle.start_range+ owner.pos[1])
 
 		Projectile.__init__(self, owner.world,owner, Rifle.size, startingPos, self.impulse, bullet=True, image0 = Projectile_Rifle.image0,
 			lifetime = 1, density=20,collisiondamage = collisiondamage, damage = damage)

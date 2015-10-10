@@ -77,11 +77,11 @@ def main(mapFilepath):
 	player = Player(_world, (100,100))
 	# vampire1 = Vampire(_world, (800, 400), target = player)
 	# zombie = Zombie(_world, (800,400), target =player)
-	# Zombie(_world, (900,300), target =player)
-	# Zombie(_world, (1100,400), target =player)
-	# Zombie(_world, (1000,200), target =player)
+	Zombie(_world, (900,300), target =player)
+	Zombie(_world, (1100,400), target =player)
+	Zombie(_world, (1000,200), target =player)
 	Skull(_world, (600,600))
-	MonsterSpawn(_world, (700,700), Skull, monster_cooldown = 0.5, duration = -1, online = True)
+	MonsterSpawn(_world, (700,700), Skull, monster_cooldown = 4, duration = -1, online = True)
 	scrollx = 0
 	scrolly = 0
 

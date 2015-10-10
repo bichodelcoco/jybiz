@@ -6,7 +6,7 @@ import random as rd
 class AnimatedUnit(GameObject):
 	'''GameObject.init() NEEDS : Box2D object to be created(uses self.fixture in update), self.groups, self.image0 to be set '''
 	''' so AnimatedUnit needs self.spritesize, self.image0, self.groups to be set'''
-	def __init__(self,world, pos, maxSpeed = 30,accel = 15,slowFactor = 0.4, maxHitpoints = 100, lifetime = -1, gravity = -1):
+	def __init__(self,world, pos, maxSpeed = 30,accel = 15,slowFactor = 0.4, maxHitpoints = 100, lifetime = -1, gravity = -1, fixedRotation = False):
 		self.img_cycleTime = 0.0
 		self.img_index = 0
 		self.img_interval = 0.2
@@ -26,14 +26,14 @@ class AnimatedUnit(GameObject):
 
 		
 		self.world = world
-		self.body = world.CreateDynamicBody(position = pygame_to_box2d(pos), fixedRotation = False, angularDamping=0.5)
+		self.body = world.CreateDynamicBody(position = pygame_to_box2d(pos), fixedRotation = fixedRotation, angularDamping=0.5)
 		self.fixture = self.body.CreatePolygonFixture(box = pixel_to_meter(self.spritesize), density = 1, friction = 0.3, userData = self)
 
 		if gravity != -1:
 			self.body.gravityScale = gravity
 		GameObject.__init__(self, maxHitpoints, lifetime = lifetime)
 
-		self.lifebar = Lifebar(self)
+		
 
 	def update(self, seconds):
 		self.vel = self.body.linearVelocity
@@ -218,7 +218,7 @@ class Player(AnimatedUnit):
 		self.timeSinceShot2 = 0.0
 
 		self.groups = allGroup, unitGroup, playerGroup
-		AnimatedUnit.__init__(self,world, pos, maxSpeed = 30, accel = 120, maxHitpoints = 300)
+		AnimatedUnit.__init__(self,world, pos, maxSpeed = 30, accel = 120, maxHitpoints = 300, fixedRotation = True)
 
 		# ledge management
 		self.feet = pygame.sprite.Sprite()
@@ -239,10 +239,17 @@ class Player(AnimatedUnit):
 		self.timeSinceShot += seconds
 		self.feet.rect.topleft = self.rect.bottomleft
 		self.jumps = 0
+
+
 		# if pygame.sprite.spritecollideany(self.feet, reboundGroup, False):
 		# 	self.jumps=0
 
 		AnimatedUnit.update(self, seconds)
+
+		if geo.vectorLength(self.vel.x, self.vel.y) >= 20 :
+			self.body.fixedRotation = False
+		else :
+			self.body.fixedRotation = True
 
 	def left_click(self, mousePos):
 		if self.timeSinceShot1 >= self.weapon1.cooldown :
@@ -264,7 +271,9 @@ class EnemyUnit(AnimatedUnit):
 		self.groups = allGroup, enemyGroup, unitGroup
 		self.attack_range = attack_range
 
+
 		AnimatedUnit.__init__(self,world,pos, maxSpeed = maxSpeed, accel = accel, maxHitpoints = maxHitpoints, gravity = gravity)
+		self.lifebar = Lifebar(self)
 
 
 
@@ -291,6 +300,8 @@ class EnemyUnit(AnimatedUnit):
 	def attack(self, target):
 		#self.playAnim_attack()
 		self.weapon.activate(rect(target.pos))
+	def teleportOnTop(self, target, maxSize = (800,500)):
+		topleft = (self.target.pos[0] - maxSize[0]/2)
 
 class Vampire(EnemyUnit):
 	img_standingRight = None
@@ -309,35 +320,39 @@ class Vampire(EnemyUnit):
 			self.goTo_x(self.target.pos[0], 250)
 			if geo.distance(self.pos, self.target.pos) < self.attack_range :
 				self.attack(self.target)
+			if self.target.pos[1] < self.pos[1]:
+
+				self.teleportOnTop(self.target)
 		EnemyUnit.update(self, seconds)
 
 
 	def loadImages(self):
 			# image loading management
 		if self.img_standingRight == None :
-			Vampire.img_standingRight  = [pygame.image.load('images/vampire/walk_idle/goRight_1.png')]
-			Vampire.img_standingRight[0].set_colorkey(WHITE)
+			Vampire.img_standingRight  = [pygame.image.load('images/vampire/walk_idle/goRight_1.png').convert()]
+			Vampire.img_standingRight[0].set_colorkey(BLACK)
+			
 
 			Vampire.img_walkingRight = [
-pygame.image.load('images/vampire/walk_idle/goRight_1.png'),			
-pygame.image.load('images/vampire/walk_idle/goRight_2.png'),
-pygame.image.load('images/vampire/walk_idle/goRight_3.png'),
-pygame.image.load('images/vampire/walk_idle/goRight_4.png'),
-pygame.image.load('images/vampire/walk_idle/goRight_5.png'),
-pygame.image.load('images/vampire/walk_idle/goRight_6.png'),
-pygame.image.load('images/vampire/walk_idle/goRight_7.png'),
-pygame.image.load('images/vampire/walk_idle/goRight_8.png')
+pygame.image.load('images/vampire/walk_idle/goRight_1.png').convert(),			
+pygame.image.load('images/vampire/walk_idle/goRight_2.png').convert(),
+pygame.image.load('images/vampire/walk_idle/goRight_3.png').convert(),
+pygame.image.load('images/vampire/walk_idle/goRight_4.png').convert(),
+pygame.image.load('images/vampire/walk_idle/goRight_5.png').convert(),
+pygame.image.load('images/vampire/walk_idle/goRight_6.png').convert(),
+pygame.image.load('images/vampire/walk_idle/goRight_7.png').convert(),
+pygame.image.load('images/vampire/walk_idle/goRight_8.png').convert()
 			]
 
 			Vampire.img_walkingLeft = [
-pygame.image.load('images/vampire/walk_idle/goLeft_1.png'),			
-pygame.image.load('images/vampire/walk_idle/goLeft_2.png'),
-pygame.image.load('images/vampire/walk_idle/goLeft_3.png'),
-pygame.image.load('images/vampire/walk_idle/goLeft_4.png'),
-pygame.image.load('images/vampire/walk_idle/goLeft_5.png'),
-pygame.image.load('images/vampire/walk_idle/goLeft_6.png'),
-pygame.image.load('images/vampire/walk_idle/goLeft_7.png'),
-pygame.image.load('images/vampire/walk_idle/goLeft_8.png')
+pygame.image.load('images/vampire/walk_idle/goLeft_1.png').convert(),			
+pygame.image.load('images/vampire/walk_idle/goLeft_2.png').convert(),
+pygame.image.load('images/vampire/walk_idle/goLeft_3.png').convert(),
+pygame.image.load('images/vampire/walk_idle/goLeft_4.png').convert(),
+pygame.image.load('images/vampire/walk_idle/goLeft_5.png').convert(),
+pygame.image.load('images/vampire/walk_idle/goLeft_6.png').convert(),
+pygame.image.load('images/vampire/walk_idle/goLeft_7.png').convert(),
+pygame.image.load('images/vampire/walk_idle/goLeft_8.png').convert()
 			]
 
 			Vampire.image0 = Vampire.img_standingRight[0]

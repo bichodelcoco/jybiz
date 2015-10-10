@@ -218,7 +218,7 @@ class GameObject(pygame.sprite.Sprite):
 		self.lifetime = lifetime
 
 
-		self.image = pygame.transform.rotate(self.image0, self.angle).convert()
+		self.image = pygame.transform.rotate(self.image0, self.angle)
 		self.rect = self.image.get_rect()
 		self.rect.center = rect(vec_to_coordinates(self.fixture.body.position))
 
@@ -252,12 +252,16 @@ class GameObject(pygame.sprite.Sprite):
 			self.die()
 
 	def rotateLeft(self):
+		if self.body.angularVelocity < 0:
+			self.body.angularVelocity = 0
 		desiredVel = 50
 		velChange = desiredVel - self.fixture.body.angularVelocity
 		torque = self.fixture.body.mass * velChange
 		self.fixture.body.ApplyTorque(torque, wake = True)
 
 	def rotateRight(self):
+		if self.body.angularVelocity > 0:
+			self.body.angularVelocity = 0
 		desiredVel = -50
 		velChange = desiredVel - self.fixture.body.angularVelocity
 		torque = self.fixture.body.mass * velChange

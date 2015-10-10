@@ -373,7 +373,46 @@ class WeaponIcon(Icon):
 
 		Icon.__init__(self, pos, imagepath)
 
+class PlayerLifebar(pygame.sprite.Sprite):
+	"""docstring for PlayerLifebar"""
+	def __init__(self,gui, color = RED):
+		
+		self.image0 = pygame.image.load('images/lifebars/player_lifebar.png').convert()
+		setColorkey(self.image0)
+		self.color= color
+		self.player = gui.player
+		self.percent = 1.0
+		self.old_playerHitpoints = self.player.maxHitpoints
+		
+		
 
+
+		self.groups = allGroup
+		pygame.sprite.Sprite.__init__(self, self.groups)
+
+		self.image = self.image0
+		self.rect= self.image.get_rect()
+
+		self.rect.topleft = (5, 5)
+
+		self.refresh()
+
+
+	def update(self, seconds):
+		if self.player.hitpoints != self.old_playerHitpoints:
+			self.percent = self.player.hitpoints*1.0 / (self.player.maxHitpoints*1.0)
+			self.old_playerHitpoints = self.player.hitpoints
+			self.refresh()
+
+	def refresh(self):
+		if self.percent != 1.0:
+
+			self.image = self.image0
+			pygame.draw.rect(self.image, self.color, (406- (1-self.percent)*397, 7,  (1-self.percent)*397,12))
+		else :
+			self.image = self.image0
+
+		
 class GameGUI(object):
 
 	def __init__(self, world, ground, player = None):
@@ -387,6 +426,8 @@ class GameGUI(object):
 
 		self.weapon1NameBox = TextBox(pos =(SCREEN_WIDTH - 160, SCREEN_HEIGHT - 30), width = 60, height = 20, text = self.player.weapon1.__class__.name, fontSize = 14, justification = 1)
 		self.weapon2NameBox = TextBox(pos =(SCREEN_WIDTH - 100, SCREEN_HEIGHT - 30), width = 60, height = 20, text = self.player.weapon2.__class__.name, fontSize = 14, justification = 1)
+
+		self.playerLifebar = PlayerLifebar(self)
 
 	def update(self):
 		if self.weaponslot1.weapon != self.player.weapon1 :
