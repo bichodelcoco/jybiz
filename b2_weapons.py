@@ -659,7 +659,7 @@ class MiniBouncingBall(Weapon):
 		pos = (self.owner.pos[0] + self.start_range*vec[0],self.owner.pos[1] + self.start_range*vec[1])
 		Projectile_MiniBouncingBall(self.owner, pos, power= self.power)
 
-#Boucing ball projectile
+#Mini Boucing ball projectile
 #----------------------------------------------------------------------------------------
 class Projectile_MiniBouncingBall(Projectile):
 	image0 = None
