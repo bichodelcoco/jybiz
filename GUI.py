@@ -54,11 +54,63 @@ class EditorGUI(object): #contains value boxes
 				self.slots[i].update()
 		self.displayedItem = self.item
 
+	def freeBuild(self, buildRect):
+		values = [0 for i in xrange(10)]
+		values[0] = buildRect.width
+		values[1] = buildRect.height
+		
+		if self.item.__name__ == 'Ledge':
+			for i in xrange(2,5):
+				temp = self.slots[i].output()
+				if temp:
+					if i == 2:
+						if temp == 1:
+							values[i] = BLACK
+						elif temp == 2:
+							values[i] = RED
+						elif temp == 3:
+							values[i] = BLUE
+					else :
+						values[i] = temp
+				#defaulft values if temp( output ) = 0
+				elif i == 0:
+					values[i] = 300
+				elif i == 1:
+					values[i] = 20
+				elif i == 2:
+					values[i]= BLACK
+				elif i==3 or i ==4:
+					values[i]= 0
+			tempItem = Ledge(self.world, self.ground, unrect(buildRect.topleft), width = values[0], height = values[1], color = values[2], allowedAngle = (-values[3],values[4]))
+
+
+		elif self.item.__name__ == 'Doodad':
+			for i in xrange(2,4):
+				temp = self.slots[i].output()
+				if temp:
+					if i == 2:
+						values[i] = findColor(temp)
+					else :
+						values[i] = temp
+				elif i == 0:
+					values[i] = 100
+				elif i == 1:
+					values[i] = 100
+				elif i == 2:
+					values[i]= BROWN
+				elif i == 3:
+					values[i]= 1
+			tempItem = Doodad(self.world, self.ground, unrect(buildRect.topleft), width = values[0], height = values[1], color = values[2], density = values[3])
+
+		elif self.item.__name__ == 'Crate' :
+			tempItem = Crate(self.world, unrect(buildRect.topleft))
+
+
+		self.itemList.append((tempItem,self.item.__name__, tempItem.pos, values))
 
 	def build(self, mousePos):
 		values = [0 for i in xrange(10)]
 		if self.item.__name__ == 'Ledge':
-
 			for i in xrange(5):
 				temp = self.slots[i].output()
 				if temp:
