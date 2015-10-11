@@ -213,51 +213,7 @@ class Projectile_Rifle(Projectile):
 
 		Projectile.update(self,seconds)
 
-# Vampire Rifle
-# ------------------------------------------------------------------------------------------------------------------
 
-class VampireRifle(Weapon):
-	name = 'Rifle'
-	start_range = 20
-	size = (5,5)
-	weapon_range = 1000
-	def __init__(self, owner, power = 150):
-		Weapon.__init__(self,owner, Rifle.weapon_range)
-		self.power = power
-
-	def activate(self, mousePos):
-		vec =  geo.normalizeVector(mousePos[0]- self.owner.rect.centerx, mousePos[1]- self.owner.rect.centery)
-
-		pos = (self.owner.pos[0] + self.start_range*vec[0],self.owner.pos[1] + self.start_range*vec[1])
-		Projectile_VampireRifle(self.owner, pos, power=self.power)
-
-# Vampire Rifle projectile
-# ------------------------------------------------------------------------------------------------------------------
-class Projectile_VampireRifle(Projectile):
-	image0 = None
-	size = (10,7)
-	def __init__(self, owner, pos, power = 150,collisiondamage = 0.1, damage = 1, targetGroup = playerGroup):
-		# image loadinVampireg management
-		if self.image0 == None :
-			Projectile_VampireRifle.image0 = pygame.Surface(self.size)
-			Projectile_VampireRifle.image0.fill(BLACK)
-			Projectile_VampireRifle.image0.set_colorkey(WHITE)
-		#--------------------------
-
-
-
-		self.power = power
-		vec = geo.normalizeVector(pos[0]- owner.pos[0], pos[1]- owner.pos[1])
-		self.impulse = (vec[0]*power, vec[1]*power)
-		startingPos = (vec[0]*50 +owner.pos[0], vec[1]*50+ owner.pos[1])
-
-		Projectile.__init__(self, owner.world,owner, self.size, startingPos, self.impulse, bullet=True,
-			image0 = Projectile_VampireRifle.image0,lifetime = 1, density=20, targetGroup = targetGroup,collisiondamage = collisiondamage, damage = damage)
-
-
-	def update(self, seconds):
-
-		Projectile.update(self,seconds)
 # MegaBall
 # ------------------------------------------------------------------------------------------------------------------
 
@@ -695,3 +651,72 @@ class Projectile_MiniBouncingBall(Projectile):
 
 
 		Projectile.__init__(self, self.world, owner, self.size, pos, self.impulse,bullet= True, image0 = self.image0, lifetime = 15, boxShape = False,collisiondamage = collisiondamage, damage = damage)
+
+''' ===== ENEMY UNIT WEAPONS =============================================================================================================================================='''
+''' ======================================================================================================================================================================='''
+# often player weapons slightly customized
+# Melee Hit, a general enemy weapon for all melee units
+# ------------------------------------------------------------------------------------------------------------------
+class MeleeHit(Weapon):
+	name = 'Melee'
+
+	def __init__(self, owner, power = 150, weapon_range = 100, cooldown = 3.0):
+		Weapon.__init__(self,owner, weapon_range)
+		self.power = power
+
+
+	def activate(self, target):
+		vec = geo.normalizeVector(target.pos[0] - self.owner.pos[0],target.pos[1] - self.owner.pos[1])
+
+		target.body.ApplyForce((vec[0]*self.power, vec[1]*self.power),target.body.worldCenter, wake = True)
+
+
+
+
+
+# Vampire Rifle
+# ------------------------------------------------------------------------------------------------------------------
+
+class VampireRifle(Weapon):
+	name = 'Rifle'
+	start_range = 20
+	size = (5,5)
+	weapon_range = 1000
+	def __init__(self, owner, power = 150):
+		Weapon.__init__(self,owner, Rifle.weapon_range)
+		self.power = power
+
+	def activate(self, mousePos):
+		vec =  geo.normalizeVector(mousePos[0]- self.owner.rect.centerx, mousePos[1]- self.owner.rect.centery)
+
+		pos = (self.owner.pos[0] + self.start_range*vec[0],self.owner.pos[1] + self.start_range*vec[1])
+		Projectile_VampireRifle(self.owner, pos, power=self.power)
+
+# Vampire Rifle projectile
+# ------------------------------------------------------------------------------------------------------------------
+class Projectile_VampireRifle(Projectile):
+	image0 = None
+	size = (10,7)
+	def __init__(self, owner, pos, power = 150,collisiondamage = 0.1, damage = 1, targetGroup = playerGroup):
+		# image loadinVampireg management
+		if self.image0 == None :
+			Projectile_VampireRifle.image0 = pygame.Surface(self.size)
+			Projectile_VampireRifle.image0.fill(BLACK)
+			Projectile_VampireRifle.image0.set_colorkey(WHITE)
+		#--------------------------
+
+
+
+		self.power = power
+		vec = geo.normalizeVector(pos[0]- owner.pos[0], pos[1]- owner.pos[1])
+		self.impulse = (vec[0]*power, vec[1]*power)
+		startingPos = (vec[0]*50 +owner.pos[0], vec[1]*50+ owner.pos[1])
+
+		Projectile.__init__(self, owner.world,owner, self.size, startingPos, self.impulse, bullet=True,
+			image0 = Projectile_VampireRifle.image0,lifetime = 1, density=20, targetGroup = targetGroup,collisiondamage = collisiondamage, damage = damage)
+
+
+	def update(self, seconds):
+
+		Projectile.update(self,seconds)
+

@@ -42,6 +42,8 @@ class EditorGUI(object): #contains value boxes
 			self.slots[1] = PropertyBox('height', INT)
 			self.slots[2] = PropertyBox('color', INT)
 			self.slots[3] = PropertyBox('density', INT)
+		elif item.__name__ == 'Crate':
+			pass
 
 
 
@@ -98,6 +100,11 @@ class EditorGUI(object): #contains value boxes
 				elif i == 3:
 					values[i]= 1
 			tempItem = Doodad(self.world, self.ground, unrect(mousePos), width = values[0], height = values[1], color = values[2], density = values[3])
+
+		elif self.item.__name__ == 'Crate' :
+			tempItem = Crate(self.world, unrect(mousePos))
+
+
 		self.itemList.append((tempItem,self.item.__name__, tempItem.pos, values))
 
 	def update(self):
@@ -232,6 +239,9 @@ class ValueBox(pygame.sprite.Sprite):
 # 		self.justification = justification
 # 		self.writeText(text)
 
+
+# Text box, a Sprite containing Text
+#------------------------------------------------------------------------------------------------------
 class TextBox(pygame.sprite.Sprite):
 
 	def __init__(self, pos = (0,0), width = 624, height = 120, text_color = BLACK, background_color = None, text = '', fontSize = 32, font = None, justification = 0):
@@ -297,42 +307,8 @@ class PropertyBox(object):
 
 
 
-
-class Button(pygame.sprite.Sprite): #is a button
-
-	def __init__(self, menu, pos, image0 = None, imageHover = None):
-
-
-		pygame.sprite.Sprite.__init__(self)
-
-		self.menu = menu
-		menu.buttons.append(self)
-		menu.run()
-
-		self.image = image0
-		self.image0 = image0
-		self.imageHover = imageHover
-		self.rect = self.image.get_rect()
-		self.rect.topleft = pos[:]
-
-	def hover(self):
-		self.image = self.imageHover
-
-	def unhover(self):
-		self.image = self.image0
-
-class AbilityButton(Button):
-
-	def __init__(self, menu, pos, ability):
-
-		self.ability = ability
-
-		ability.loadImage()
-		Button.__init__(self, menu, pos, ability.image0, ability.imageHover)
-
-
-	def click(self):
-		self.ability.click()
+# GUI Icons
+# ---------------------------------------------------------
 
 class Icon(pygame.sprite.Sprite):
 	def __init__(self, pos, imagepath = None, size =(40,40)):
@@ -373,6 +349,10 @@ class WeaponIcon(Icon):
 
 		Icon.__init__(self, pos, imagepath)
 
+# ------------------------------------------------------------------------------------
+
+# Player lifeBar
+
 class PlayerLifebar(pygame.sprite.Sprite):
 	"""docstring for PlayerLifebar"""
 	def __init__(self,gui, color = RED):
@@ -394,6 +374,7 @@ class PlayerLifebar(pygame.sprite.Sprite):
 		self.rect= self.image.get_rect()
 
 		self.rect.topleft = (5, 5)
+		self.hitpointsInfoBox = TextBox((105,32), width =200, height = 30, text_color = BLACK, background_color = None, text = str(int(self.player.hitpoints)) + '/'+str(self.player.maxHitpoints), fontSize = 20, font = None, justification = 0)
 
 		self.refresh()
 
@@ -405,6 +386,7 @@ class PlayerLifebar(pygame.sprite.Sprite):
 			self.refresh()
 
 	def refresh(self):
+		self.hitpointsInfoBox.writeText(str(int(self.player.hitpoints)) + '/'+str(self.player.maxHitpoints))
 		if self.percent != 1.0:
 
 			self.image = self.image0

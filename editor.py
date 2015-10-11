@@ -305,7 +305,8 @@ def load(filepath, world, ground, editorGui = None):
 			temp = Ledge(world, ground, pos, width = values[0], height = values[1], color = values[2], allowedAngle = (-values[3],values[4]))		
 		elif name == 'Doodad':
 			temp =Doodad(world, ground, pos, width = values[0], height = values[1], color = values[2], density = values[3])
-
+		elif name == 'Crate':
+			temp = Crate(world, pos)
 		if editorGui :
 			editorGui.itemList.append((temp, name, pos, values))
 	

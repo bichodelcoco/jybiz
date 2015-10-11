@@ -198,8 +198,21 @@ class AnimatedUnit(GameObject):
 			self.jumps += 1
 
 	def kill(self):
-		self.lifebar.kill()
+
+		
 		GameObject.kill(self)
+
+	def rotateLeft(self):
+		self.body.fixedRotation = False
+		self.body.ApplyAngularImpulse(50, wake = True)
+		self.rotating = True
+		self.rotationIndex = self.rotationFrames
+		
+	def rotateRight(self):
+		self.body.fixedRotation = False
+		self.body.ApplyAngularImpulse(-20, wake = True)
+		self.rotating = True
+		self.rotationIndex = self.rotationFrames
 
 class Player(AnimatedUnit):
 	spritesheet = None
@@ -211,6 +224,8 @@ class Player(AnimatedUnit):
 		self.loadImages()
 		self.jump_elapsedTime = 0.0
 		self.timeSinceShot = 0.0
+		self.rotating = False
+		self.rotationFrames = 10
 
 		self.weapon1 = Hadouken(self)
 		self.weapon2 = Grenade(self)
@@ -241,13 +256,22 @@ class Player(AnimatedUnit):
 		self.jumps = 0
 
 
+
+
 		# if pygame.sprite.spritecollideany(self.feet, reboundGroup, False):
 		# 	self.jumps=0
 
 		AnimatedUnit.update(self, seconds)
 
-		if geo.vectorLength(self.vel.x, self.vel.y) >= 20 :
+		if geo.vectorLength(self.vel.x, self.vel.y) >= 15 :
 			self.body.fixedRotation = False
+		elif self.body.angle < -0.1 :
+			self.body.fixedRotation = False
+			self.body.ApplyAngularImpulse(0.5, wake = True)
+		elif self.body.angle > 0.1:
+			self.body.fixedRotation = False
+			self.body.ApplyAngularImpulse(-0.5, wake = True)
+			
 		else :
 			self.body.fixedRotation = True
 
@@ -270,6 +294,7 @@ class EnemyUnit(AnimatedUnit):
 		
 		self.groups = allGroup, enemyGroup, unitGroup
 		self.attack_range = attack_range
+		self.timeSinceShot = 0.0
 
 
 		AnimatedUnit.__init__(self,world,pos, maxSpeed = maxSpeed, accel = accel, maxHitpoints = maxHitpoints, gravity = gravity)
@@ -300,8 +325,15 @@ class EnemyUnit(AnimatedUnit):
 	def attack(self, target):
 		#self.playAnim_attack()
 		self.weapon.activate(rect(target.pos))
+
+
 	def teleportOnTop(self, target, maxSize = (800,500)):
 		topleft = (self.target.pos[0] - maxSize[0]/2)
+
+
+	def kill(self):
+		self.lifebar.kill()
+		AnimatedUnit.kill(self)
 
 class Vampire(EnemyUnit):
 	img_standingRight = None
@@ -320,9 +352,9 @@ class Vampire(EnemyUnit):
 			self.goTo_x(self.target.pos[0], 250)
 			if geo.distance(self.pos, self.target.pos) < self.attack_range :
 				self.attack(self.target)
-			if self.target.pos[1] < self.pos[1]:
+			# if self.target.pos[1] < self.pos[1]:
 
-				self.teleportOnTop(self.target)
+			# 	self.teleportOnTop(self.target)
 		EnemyUnit.update(self, seconds)
 
 
@@ -334,25 +366,25 @@ class Vampire(EnemyUnit):
 			
 
 			Vampire.img_walkingRight = [
-pygame.image.load('images/vampire/walk_idle/goRight_1.png').convert(),			
-pygame.image.load('images/vampire/walk_idle/goRight_2.png').convert(),
-pygame.image.load('images/vampire/walk_idle/goRight_3.png').convert(),
-pygame.image.load('images/vampire/walk_idle/goRight_4.png').convert(),
-pygame.image.load('images/vampire/walk_idle/goRight_5.png').convert(),
-pygame.image.load('images/vampire/walk_idle/goRight_6.png').convert(),
-pygame.image.load('images/vampire/walk_idle/goRight_7.png').convert(),
-pygame.image.load('images/vampire/walk_idle/goRight_8.png').convert()
+pygame.image.load('images/vampire/walk_idle/goRight_1.png'),			
+pygame.image.load('images/vampire/walk_idle/goRight_2.png'),
+pygame.image.load('images/vampire/walk_idle/goRight_3.png'),
+pygame.image.load('images/vampire/walk_idle/goRight_4.png'),
+pygame.image.load('images/vampire/walk_idle/goRight_5.png'),
+pygame.image.load('images/vampire/walk_idle/goRight_6.png'),
+pygame.image.load('images/vampire/walk_idle/goRight_7.png'),
+pygame.image.load('images/vampire/walk_idle/goRight_8.png')
 			]
 
 			Vampire.img_walkingLeft = [
-pygame.image.load('images/vampire/walk_idle/goLeft_1.png').convert(),			
-pygame.image.load('images/vampire/walk_idle/goLeft_2.png').convert(),
-pygame.image.load('images/vampire/walk_idle/goLeft_3.png').convert(),
-pygame.image.load('images/vampire/walk_idle/goLeft_4.png').convert(),
-pygame.image.load('images/vampire/walk_idle/goLeft_5.png').convert(),
-pygame.image.load('images/vampire/walk_idle/goLeft_6.png').convert(),
-pygame.image.load('images/vampire/walk_idle/goLeft_7.png').convert(),
-pygame.image.load('images/vampire/walk_idle/goLeft_8.png').convert()
+pygame.image.load('images/vampire/walk_idle/goLeft_1.png'),			
+pygame.image.load('images/vampire/walk_idle/goLeft_2.png'),
+pygame.image.load('images/vampire/walk_idle/goLeft_3.png'),
+pygame.image.load('images/vampire/walk_idle/goLeft_4.png'),
+pygame.image.load('images/vampire/walk_idle/goLeft_5.png'),
+pygame.image.load('images/vampire/walk_idle/goLeft_6.png'),
+pygame.image.load('images/vampire/walk_idle/goLeft_7.png'),
+pygame.image.load('images/vampire/walk_idle/goLeft_8.png')
 			]
 
 			Vampire.image0 = Vampire.img_standingRight[0]
@@ -366,16 +398,21 @@ class Zombie(EnemyUnit):
 
 		self.loadImages()
 		self.target = target
-		self.weapon = VampireRifle(self)
+		self.weapon = MeleeHit(self)
 
-		EnemyUnit.__init__(self,world, pos, maxSpeed, accel, attack_range = 300, maxHitpoints = 500)
+		EnemyUnit.__init__(self,world, pos, maxSpeed, accel, attack_range = 100, maxHitpoints = 500)
 
 	def update(self, seconds):
 		if self.target :
 			self.goTo_x(self.target.pos[0], 10)
-		# 	if geo.distance(self.pos, self.target.pos) < self.attack_range :
-		# 		self.attack(self.target)
+		if geo.distance(self.pos, self.target.pos) < self.attack_range :
+			if self.timeSinceShot >= self.weapon.cooldown :
+				self.attack(self.target)
+				self.timeSinceShot = 0.0
 		EnemyUnit.update(self, seconds)
+
+	def attack(self, target):
+		self.weapon.activate(target)
 
 	def loadImages(self):
 			# image loading management

@@ -75,7 +75,7 @@ def main(mapFilepath):
 	# --- Game setup -----------------------------------------
 	mainLoop = True
 	player = Player(_world, (100,100))
-	# vampire1 = Vampire(_world, (800, 400), target = player)
+	vampire1 = Vampire(_world, (800, 400), target = player)
 	# zombie = Zombie(_world, (800,400), target =player)
 	Zombie(_world, (900,300), target =player)
 	Zombie(_world, (1100,400), target =player)

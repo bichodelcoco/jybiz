@@ -241,7 +241,7 @@ class GameObject(pygame.sprite.Sprite):
 			self.rect.center = rect(vec_to_coordinates(self.fixture.body.position))
 		else :
 			self.pos = vec_to_coordinates(self.fixture.body.position)
-
+		
 
 		self.rect.center = rect(self.pos)
 
@@ -251,21 +251,7 @@ class GameObject(pygame.sprite.Sprite):
 		if self.hitpoints < 0 :
 			self.die()
 
-	def rotateLeft(self):
-		if self.body.angularVelocity < 0:
-			self.body.angularVelocity = 0
-		desiredVel = 50
-		velChange = desiredVel - self.fixture.body.angularVelocity
-		torque = self.fixture.body.mass * velChange
-		self.fixture.body.ApplyTorque(torque, wake = True)
-
-	def rotateRight(self):
-		if self.body.angularVelocity > 0:
-			self.body.angularVelocity = 0
-		desiredVel = -50
-		velChange = desiredVel - self.fixture.body.angularVelocity
-		torque = self.fixture.body.mass * velChange
-		self.fixture.body.ApplyTorque(torque, wake = True)
+	
 
 
 
