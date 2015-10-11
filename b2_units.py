@@ -204,13 +204,13 @@ class AnimatedUnit(GameObject):
 
 	def rotateLeft(self):
 		self.body.fixedRotation = False
-		self.body.ApplyAngularImpulse(50, wake = True)
+		self.body.ApplyAngularImpulse(10, wake = True)
 		self.rotating = True
 		self.rotationIndex = self.rotationFrames
 		
 	def rotateRight(self):
 		self.body.fixedRotation = False
-		self.body.ApplyAngularImpulse(-20, wake = True)
+		self.body.ApplyAngularImpulse(-10, wake = True)
 		self.rotating = True
 		self.rotationIndex = self.rotationFrames
 

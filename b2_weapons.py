@@ -264,7 +264,7 @@ class Projectile_megaBall(Projectile):
 		self.impulse = (vec[0]*power, vec[1]*power)
 		startingPos = (vec[0]*50 +owner.pos[0], vec[1]*50+ owner.pos[1])
 
-		Projectile.__init__(self, owner.world, owner, megaBall.size, startingPos, self.impulse, image0 = Projectile_megaBall.image0,lifetime = 5, density=500)
+		Projectile.__init__(self, owner.world, owner, megaBall.size, startingPos, self.impulse, image0 = Projectile_megaBall.image0,lifetime = 5, density=500, collisiondamage = collisiondamage, damage = damage)
 
 		self.fixture.body.gravityScale = 0
 
