@@ -310,7 +310,7 @@ class Crate(GameObject):
 		self.world = world
 		self.body = world.CreateDynamicBody(position = pygame_to_box2d(pos))
 		self.fixture = self.body.CreatePolygonFixture(box = pixel_to_meter((32,32)), density = 1, friction = 0.3, userData = self)
-		self.groups = allGroup, enemyGroup, reboundGroup, unitGroup
+		self.groups = allGroup, enemyGroup, reboundGroup, unitGroup, terrainGroup
 		GameObject.__init__(self)
 
 

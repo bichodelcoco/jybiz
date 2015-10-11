@@ -132,8 +132,8 @@ def editor(mapFilepath):
 	building = False
 	deleteMode = False
 	modeList = [freeBuild, building, deleteMode]
-	# buildRect = BuildRect()
-	# buildSprite = BuildSprite(buildRect)
+	buildRect = BuildRect()
+	
 	itemList = [Ledge, Doodad, Crate]
 	itemList_index = 0
 	gui = GUI.EditorGUI(world = _world, ground = ground, item = Ledge)
@@ -160,7 +160,7 @@ def editor(mapFilepath):
 				if freeBuild :
 					if g.LEFT_CLICK :
 						buildRect.mouseMotion()
-				if True :
+				else :
 					old_hover = hovered
 					hovered =  pygame.sprite.spritecollide(cursor, hoverGroup, False)
 					temp = [item for item in old_hover if item not in hovered]
@@ -172,18 +172,22 @@ def editor(mapFilepath):
 			if event.type == MOUSEBUTTONDOWN :
 				if event.button == 1:
 					g.LEFT_CLICK = True
-					if freeBuild :
+					if building :
+						pass
+					elif freeBuild :
+						buildSprite = buildSprite = BuildSprite(buildRect)
 						buildRect.mousePos = cursor.rect.topleft[:]
-					
-					if True :
+
+					else :
 						if hovered:
 							hovered[0].click()
 
 			elif event.type == MOUSEBUTTONUP :
 				if event.button == 1:
 					g.LEFT_CLICK = False
-					# if freeBuild :
-					# 	buildSprite.build()
+					if freeBuild :
+						gui.freeBuild(buildRect)
+						buildSprite.kill()
 					if building :
 						gui.build(cursor.rect.topleft)
 					elif deleteMode:
@@ -205,6 +209,8 @@ def editor(mapFilepath):
 					blueprint.kill()
 					if building :
 						blueprint = Blueprint((gui.slots[0].output(), gui.slots[1].output()))
+				elif event.key == K_f :
+					freeBuild = not freeBuild
 
 
 				elif event.key == K_c: #cycle through buildable items

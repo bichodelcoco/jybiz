@@ -81,7 +81,7 @@ class EditorGUI(object): #contains value boxes
 					values[i]= BLACK
 				elif i==3 or i ==4:
 					values[i]= 0
-			tempItem = Ledge(self.world, self.ground, unrect(buildRect.topleft), width = values[0], height = values[1], color = values[2], allowedAngle = (-values[3],values[4]))
+			tempItem = Ledge(self.world, self.ground, unrect(buildRect.center), width = values[0], height = values[1], color = values[2], allowedAngle = (-values[3],values[4]))
 
 
 		elif self.item.__name__ == 'Doodad':
@@ -100,10 +100,10 @@ class EditorGUI(object): #contains value boxes
 					values[i]= BROWN
 				elif i == 3:
 					values[i]= 1
-			tempItem = Doodad(self.world, self.ground, unrect(buildRect.topleft), width = values[0], height = values[1], color = values[2], density = values[3])
+			tempItem = Doodad(self.world, self.ground, unrect(buildRect.center), width = values[0], height = values[1], color = values[2], density = values[3])
 
 		elif self.item.__name__ == 'Crate' :
-			tempItem = Crate(self.world, unrect(buildRect.topleft))
+			tempItem = Crate(self.world, unrect(buildRect.center))
 
 
 		self.itemList.append((tempItem,self.item.__name__, tempItem.pos, values))
