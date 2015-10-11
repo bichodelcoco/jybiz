@@ -418,7 +418,7 @@ class Doodad(GameObject):
 
 
 
-		self.body = world.CreateDynamicBody(position = pygame_to_box2d(leftpoint), angle = math.pi/4.0)
+		self.body = world.CreateDynamicBody(position = pygame_to_box2d(leftpoint), angle = 0)
 		self.fixture = self.body.CreatePolygonFixture(box = pixel_to_meter((width,height)), density = density, friction = 0.3, userData = self)
 
 
