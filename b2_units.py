@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 from b2_classes import *
 from b2_weapons import *
 import random as rd
@@ -24,7 +26,7 @@ class AnimatedUnit(GameObject):
 		self.image0 = self.img_standingRight[0]
 
 
-		
+
 		self.world = world
 		self.body = world.CreateDynamicBody(position = pygame_to_box2d(pos), fixedRotation = fixedRotation, angularDamping=0.5)
 		self.fixture = self.body.CreatePolygonFixture(box = pixel_to_meter(self.spritesize), density = 1, friction = 0.3, userData = self)
@@ -33,7 +35,7 @@ class AnimatedUnit(GameObject):
 			self.body.gravityScale = gravity
 		GameObject.__init__(self, maxHitpoints, lifetime = lifetime)
 
-		
+
 
 	def update(self, seconds):
 		self.vel = self.body.linearVelocity
@@ -47,10 +49,10 @@ class AnimatedUnit(GameObject):
 		self.animate(seconds)
 		GameObject.update(self, seconds)
 
-		
+
 	def animate(self, seconds):
 
-		
+
 		if self.skip == False :
 			if self.goingRight:
 				if self.attacking :
@@ -74,11 +76,11 @@ class AnimatedUnit(GameObject):
 					self.img_index = (self.img_index+1)%len(self.img_list)
 					self.image0 = self.img_list[self.img_index]
 					self.img_cycleTime = 0.0
-# move laterally 
+# move laterally
 #---------------------------------------------------------------------------------------------
 	def goRight(self):
 		self.go(self.maxSpeed, self.accel)
-		
+
 		self.walking = True
 		self.walkingRight = True
 		self.goingRight = True
@@ -94,7 +96,7 @@ class AnimatedUnit(GameObject):
 
 	def custom_goRight(self, maxSpeed, accel):
 		self.go(maxSpeed, accel)
-		
+
 		self.walking = True
 		self.walkingRight = True
 		self.goingRight = True
@@ -102,7 +104,7 @@ class AnimatedUnit(GameObject):
 
 	def custom_goLeft(self, maxSpeed, accel):
 		self.go(-maxSpeed, accel)
-		
+
 		self.walking = True
 		self.walkingLeft = True
 		self.goingLeft = True
@@ -140,7 +142,7 @@ class AnimatedUnit(GameObject):
 
 	def moveRight(self):
 		self.move_x(15)
-		
+
 		self.walking = True
 		self.walkingRight = True
 		self.goingRight = True
@@ -165,7 +167,7 @@ class AnimatedUnit(GameObject):
 		self.body.ApplyLinearImpulse((-self.vel.x*self.slowFactor*self.body.mass,0), self.body.worldCenter, wake = True)
 
 	def slow_y(self):
-		
+
 		self.body.ApplyLinearImpulse((0,-self.vel.y*self.slowFactor*self.body.mass), self.body.worldCenter, wake = True)
 
 
@@ -174,7 +176,7 @@ class AnimatedUnit(GameObject):
 
 		self.fixture.body.ApplyForce((0,-500), self.fixture.body.worldCenter, wake = True)
 
-	
+
 
 	def move_x(self, desiredVel):
 		vel = self.fixture.body.linearVelocity
@@ -199,7 +201,7 @@ class AnimatedUnit(GameObject):
 
 	def kill(self):
 
-		
+
 		GameObject.kill(self)
 
 	def rotateLeft(self):
@@ -207,7 +209,7 @@ class AnimatedUnit(GameObject):
 		self.body.ApplyAngularImpulse(10, wake = True)
 		self.rotating = True
 		self.rotationIndex = self.rotationFrames
-		
+
 	def rotateRight(self):
 		self.body.fixedRotation = False
 		self.body.ApplyAngularImpulse(-10, wake = True)
@@ -220,7 +222,7 @@ class Player(AnimatedUnit):
 	spritesize = (40,64)
 	image0 = None
 	def __init__(self, world, pos):
-		
+
 		self.loadImages()
 		self.jump_elapsedTime = 0.0
 		self.timeSinceShot = 0.0
@@ -245,7 +247,7 @@ class Player(AnimatedUnit):
 			Player.img_standingRight  = [Player.spritesheet.getImage((101,45, Player.spritesize), -1)]
 
 			Player.img_walkingRight = Player.spritesheet.getStrip((99,173 ,Player.spritesize), 8,step =89, colorkey = -1)
-			
+
 			Player.image0 = Player.img_standingRight[0]
 		#--------------------------
 
@@ -271,7 +273,7 @@ class Player(AnimatedUnit):
 		elif self.body.angle > 0.1:
 			self.body.fixedRotation = False
 			self.body.ApplyAngularImpulse(-0.5, wake = True)
-			
+
 		else :
 			self.body.fixedRotation = True
 
@@ -286,12 +288,13 @@ class Player(AnimatedUnit):
 			self.timeSinceShot2 = 0.0
 
 
-class EnemyUnit(AnimatedUnit):
+class EnemyUnit(AnimatedUnit): #classe parente enemis
+
+	#toute unite box2D a besoin de 'world'
+	#gravity -1 : gravity normale, needed pour les skulls
 
 	def __init__(self, world, pos, maxSpeed = 20, accel = 50, attack_range = 300, maxHitpoints = 100, gravity = -1):
 
-
-		
 		self.groups = allGroup, enemyGroup, unitGroup
 		self.attack_range = attack_range
 		self.timeSinceShot = 0.0
@@ -363,10 +366,10 @@ class Vampire(EnemyUnit):
 		if self.img_standingRight == None :
 			Vampire.img_standingRight  = [pygame.image.load('images/vampire/walk_idle/goRight_1.png').convert()]
 			Vampire.img_standingRight[0].set_colorkey(BLACK)
-			
+
 
 			Vampire.img_walkingRight = [
-pygame.image.load('images/vampire/walk_idle/goRight_1.png'),			
+pygame.image.load('images/vampire/walk_idle/goRight_1.png'),
 pygame.image.load('images/vampire/walk_idle/goRight_2.png'),
 pygame.image.load('images/vampire/walk_idle/goRight_3.png'),
 pygame.image.load('images/vampire/walk_idle/goRight_4.png'),
@@ -377,7 +380,7 @@ pygame.image.load('images/vampire/walk_idle/goRight_8.png')
 			]
 
 			Vampire.img_walkingLeft = [
-pygame.image.load('images/vampire/walk_idle/goLeft_1.png'),			
+pygame.image.load('images/vampire/walk_idle/goLeft_1.png'),
 pygame.image.load('images/vampire/walk_idle/goLeft_2.png'),
 pygame.image.load('images/vampire/walk_idle/goLeft_3.png'),
 pygame.image.load('images/vampire/walk_idle/goLeft_4.png'),
@@ -395,16 +398,20 @@ class Zombie(EnemyUnit):
 	spritesize = (40,62)
 
 	def __init__(self, world, pos, maxSpeed = 30, accel = 120, target = None):
+		# target = None : qd tu def le comportement du monstre il faut un moyen de def la target
 
 		self.loadImages()
 		self.target = target
 		self.weapon = MeleeHit(self)
 
-		EnemyUnit.__init__(self,world, pos, maxSpeed, accel, attack_range = 100, maxHitpoints = 500)
+		EnemyUnit.__init__(self,world, pos, maxSpeed, accel, attack_range = self.weapon.weapon_range, maxHitpoints = 500)
 
+	#update : comportement
 	def update(self, seconds):
+		#si il a une target il va a la position x
 		if self.target :
 			self.goTo_x(self.target.pos[0], 10)
+		#attaque
 		if geo.distance(self.pos, self.target.pos) < self.attack_range :
 			if self.timeSinceShot >= self.weapon.cooldown :
 				self.attack(self.target)
@@ -417,11 +424,14 @@ class Zombie(EnemyUnit):
 	def loadImages(self):
 			# image loading management
 		if self.img_standingRight == None :
+			# /!\ liste d'images
+			# .convert() et set_colorkey needed que pour la premiere image
+			# fonction hand made pour enlever le fond : setColorkey(image), ou setColorkeyList(imagelist)
 			Zombie.img_standingRight  = [pygame.image.load('images/zombie/walk/goRight_1.png').convert()]
 			Zombie.img_standingRight[0].set_colorkey(BLACK)
 
 			Zombie.img_walkingRight = [
-pygame.image.load('images/zombie/walk/goRight_1.png'),			
+pygame.image.load('images/zombie/walk/goRight_1.png'),
 pygame.image.load('images/zombie/walk/goRight_2.png'),
 pygame.image.load('images/zombie/walk/goRight_3.png'),
 pygame.image.load('images/zombie/walk/goRight_4.png'),
@@ -434,7 +444,7 @@ pygame.image.load('images/zombie/walk/goRight_10.png')
 			]
 
 			Zombie.img_walkingLeft = [
-pygame.image.load('images/zombie/walk/goLeft_1.png'),			
+pygame.image.load('images/zombie/walk/goLeft_1.png'),
 pygame.image.load('images/zombie/walk/goLeft_2.png'),
 pygame.image.load('images/zombie/walk/goLeft_3.png'),
 pygame.image.load('images/zombie/walk/goLeft_4.png'),
@@ -445,7 +455,7 @@ pygame.image.load('images/zombie/walk/goLeft_8.png'),
 pygame.image.load('images/zombie/walk/goLeft_9.png'),
 pygame.image.load('images/zombie/walk/goLeft_10.png')
 			]
-		
+
 
 
 
@@ -458,7 +468,7 @@ class Skull(EnemyUnit):
 		self.loadImages()
 		self.target = target
 		self.moveCooldown = moveCooldown
-		self.moveElapsedTime = moveCooldown 
+		self.moveElapsedTime = moveCooldown
 		self.chargeMaxSpeed = chargeMaxSpeed
 		self.fullChargeTime = 8.0
 		self.chargeTime = 0.0
@@ -466,14 +476,14 @@ class Skull(EnemyUnit):
 		EnemyUnit.__init__(self,world, pos, maxSpeed, accel, attack_range = attack_range, maxHitpoints = 200, gravity = 0)
 
 		self.skip = True
-
+	#dans update on fait le comportement du monstre
 	def update(self, seconds):
 		if self.target :
 			self.chargeTime += seconds
 			speed_factor = geo.minimum(self.chargeTime/self.fullChargeTime, 1)
 			if speed_factor >= 0.35:
 				self.image0 = self.img_chargeMaxSpeed[0]
-			else : 
+			else :
 				self.image0 = self.img_targetting[0]
 
 			self.charge(self.target.pos, speed_factor)
@@ -490,12 +500,12 @@ class Skull(EnemyUnit):
 				directionVec = (rd.randint(-1,1),rd.randint(-1,1))
 			self.go(directionVec[0]*self.maxSpeed, self.accel)
 			self.fly(directionVec[1]*self.maxSpeed, self.accel)
+		#il faut def un comportement qd il a pas de target aussi
 
-		
 		EnemyUnit.update(self, seconds)
 
 	def charge(self, pos, speed_factor, distance = 10):
-		
+
 		if geo.distance_oneDim(pos[0], self.pos[0]) > distance:
 			if pos[0] - self.pos[0] >= 0:
 				self.custom_goRight(self.chargeMaxSpeed, speed_factor*self.accel)
@@ -503,7 +513,7 @@ class Skull(EnemyUnit):
 				self.custom_goLeft(self.chargeMaxSpeed, speed_factor*self.accel)
 		else :
 			self.slow_x()
-			
+
 		if geo.distance_oneDim(pos[1], self.pos[1]) > distance:
 			if pos[1] - self.pos[1] <= 0:
 				self.flyUp(self.chargeMaxSpeed, speed_factor*self.accel)
@@ -524,6 +534,3 @@ class Skull(EnemyUnit):
 			setColorkeyList(Skull.img_targetting)
 			Skull.img_chargeMaxSpeed = [pygame.image.load('images/skull/charge.png').convert()]
 			setColorkeyList(Skull.img_chargeMaxSpeed)
-
-
-
