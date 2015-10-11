@@ -134,7 +134,7 @@ def editor(mapFilepath):
 	modeList = [freeBuild, building, deleteMode]
 	# buildRect = BuildRect()
 	# buildSprite = BuildSprite(buildRect)
-	itemList = [Ledge, Doodad]
+	itemList = [Ledge, Doodad, Crate]
 	itemList_index = 0
 	gui = GUI.EditorGUI(world = _world, ground = ground, item = Ledge)
 	scrollx = 0
@@ -157,8 +157,9 @@ def editor(mapFilepath):
 
 			if event.type == MOUSEMOTION :
 				cursor.update()
-				# if g.LEFT_CLICK :
-				# 	# buildRect.mouseMotion()
+				if freeBuild :
+					if g.LEFT_CLICK :
+						buildRect.mouseMotion()
 				if True :
 					old_hover = hovered
 					hovered =  pygame.sprite.spritecollide(cursor, hoverGroup, False)
@@ -171,8 +172,8 @@ def editor(mapFilepath):
 			if event.type == MOUSEBUTTONDOWN :
 				if event.button == 1:
 					g.LEFT_CLICK = True
-					# if freeBuild :
-					# 	buildRect.mousePos = cursor.rect.topleft[:]
+					if freeBuild :
+						buildRect.mousePos = cursor.rect.topleft[:]
 					
 					if True :
 						if hovered:
@@ -221,7 +222,7 @@ def editor(mapFilepath):
 		if deleteMode:
 			infoString += '- deleteMode X '
 		if freeBuild:
-			infoString += ' freeBuild'
+			infoString += '- freeBuild F'
 		infoBox.writeText(infoString)
 
 		# -------- Scrolling  with keyboard------------------
