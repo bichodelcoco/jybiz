@@ -664,7 +664,7 @@ class MeleeHit(Weapon):
 		Weapon.__init__(self,owner, weapon_range)
 		self.power = power
 
-
+	#pousse le target selon le vecteur
 	def activate(self, target):
 		vec = geo.normalizeVector(target.pos[0] - self.owner.pos[0],target.pos[1] - self.owner.pos[1])
 
@@ -719,4 +719,3 @@ class Projectile_VampireRifle(Projectile):
 	def update(self, seconds):
 
 		Projectile.update(self,seconds)
-
