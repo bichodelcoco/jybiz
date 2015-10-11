@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 from b2_classes import *
 from b2_weapons import *
 import random as rd
