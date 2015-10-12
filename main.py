@@ -69,11 +69,9 @@ def main(mapFilepath):
 	# --- Game setup -----------------------------------------
 	mainLoop = True
 
-	editor.load(mapFilepath, _world, ground)
-	player = None
-	for item in playerSpawnGroup :
-		player = Player(_world, item.pos)
-		item.kill()
+	spawnPos = editor.load(mapFilepath, _world, ground)
+	player = Player(_world, spawnPos)
+	
 	# vampire1 = Vampire(_world, (800, 400), target = player)
 	# zombie = Zombie(_world, (800,400), target =player)
 	Zombie(_world, (900,300), target =player)
@@ -239,5 +237,5 @@ def main(mapFilepath):
 		allGroup.draw(screen)
 		pygame.display.flip()
 
-editor.editor(FILEPATH, new = False)
+editor.editor(FILEPATH, new = True)
 main(FILEPATH)

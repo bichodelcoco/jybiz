@@ -250,7 +250,7 @@ def editor(mapFilepath, new = False):
 	tempList = []
 	for item in gui.itemList:
 		tempList.append((item[1],item[2],item[3]))
-	save(FILEPATH, tempList)
+	save(FILEPATH, tempList, gui)
 
 	for item in allGroup:
 		item.kill()
@@ -263,10 +263,11 @@ def editor(mapFilepath, new = False):
 
 
 
-def save(filepath, itemList):
+def save(filepath, itemList, gui):
 	f = shelve.DbfilenameShelf(filepath, flag='c', protocol=None, writeback=False)
 	f['itemNumber'] = len(itemList)
 	index =0
+	f['spawnPos'] = gui.spawn.pos 
 	for item in itemList:
 		f[str(index)]= item
 		index += 1
@@ -293,13 +294,12 @@ def load(filepath, world, ground, editorGui = None):
 			temp =Doodad(world, ground, pos, width = values[0], height = values[1], color = values[2], density = values[3])
 		elif name == 'Crate':
 			temp = Crate(world, pos)
-		elif name == 'PlayerSpawn':
-			temp = PlayerSpawn(pos)
 		if editorGui :
 			editorGui.itemList.append((temp, name, pos, values))
 	
-	
+	pos = f['spawnPos']
 	f.close()
+	return pos
 
 
 

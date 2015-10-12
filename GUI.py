@@ -19,6 +19,7 @@ class EditorGUI(object): #contains value boxes
 		self.slots = [0 for i in xrange(10)]
 		self.posList = []
 		self.nameBox = TextBox(pos = (SCREEN_WIDTH - 130, 30), width = 100, height = 20, fontSize = 16, justification = 1)
+		self.spawn = PlayerSpawn((100,100))
 
 		self.loadItem(item)
 		self.displayedItem = None
@@ -58,6 +59,7 @@ class EditorGUI(object): #contains value boxes
 		values = [0 for i in xrange(10)]
 		values[0] = buildRect.width
 		values[1] = buildRect.height
+		skip = False
 		
 		if self.item.__name__ == 'Ledge':
 			for i in xrange(2,5):
@@ -105,13 +107,17 @@ class EditorGUI(object): #contains value boxes
 		elif self.item.__name__ == 'Crate' :
 			tempItem = Crate(self.world, unrect(buildRect.center))
 		elif self.item.__name__ == 'PlayerSpawn' :
-			tempItem = PlayerSpawn(unrect(buildRect.center))
+			skip = True
+			for item in playerSpawnGroup :
+				item.kill()
+			self.spawn = PlayerSpawn(unrect(buildRect.center))
 
-
-		self.itemList.append((tempItem,self.item.__name__, tempItem.pos, values))
+		if not skip :
+			self.itemList.append((tempItem,self.item.__name__, tempItem.pos, values))
 
 	def build(self, mousePos):
 		values = [0 for i in xrange(10)]
+		skip = False
 		if self.item.__name__ == 'Ledge':
 			for i in xrange(5):
 				temp = self.slots[i].output()
@@ -158,10 +164,13 @@ class EditorGUI(object): #contains value boxes
 		elif self.item.__name__ == 'Crate' :
 			tempItem = Crate(self.world, unrect(mousePos))
 		elif self.item.__name__ == 'PlayerSpawn':
-			tempItem = PlayerSpawn(unrect(mousePos))
+			skip = True
+			for item in playerSpawnGroup :
+				item.kill()
+			self.spawn = PlayerSpawn(unrect(mousePos))
 
-
-		self.itemList.append((tempItem,self.item.__name__, tempItem.pos, values))
+		if not skip :
+			self.itemList.append((tempItem,self.item.__name__, tempItem.pos, values))
 
 	def update(self):
 		if self.item != self.displayedItem:
