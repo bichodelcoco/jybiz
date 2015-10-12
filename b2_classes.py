@@ -17,9 +17,9 @@ from Box2D.b2 import *
 PPM= 20.0 # pixels per meter
 TARGET_FPS=60
 TIME_STEP=1.0/TARGET_FPS
-SCREEN_WIDTH, SCREEN_HEIGHT=800,600
+SCREEN_WIDTH, SCREEN_HEIGHT=1024,760
 
-FILEPATH = 'tt.db'
+FILEPATH = 'maps/new.db'
 
 
 
@@ -45,6 +45,7 @@ hoverGroup = pygame.sprite.Group()
 unitGroup = pygame.sprite.Group()
 playerGroup = pygame.sprite.Group()
 guiGroup = pygame.sprite.Group()
+playerSpawnGroup = pygame.sprite.Group()
 
 
 
@@ -59,8 +60,8 @@ class g(object):
 	INPUT = False
 	scrollStepx = 3
 	scrollStepy = 3
-	BIGMAP_WIDTH=1440
-	BIGMAP_HEIGHT=900
+	BIGMAP_WIDTH=2000
+	BIGMAP_HEIGHT=1000
 	TIMEON = True
 	TIMERS = []
 
@@ -120,6 +121,12 @@ def setColorkey(image):
 def setColorkeyList(imageList):
 	for image in imageList:
 		setColorkey(image)
+
+def createEdges(world,mapSize = (SCREEN_WIDTH, SCREEN_HEIGHT)):
+	leftEdge = StaticObject(world, (0,0), (25, mapSize[1]))
+	rightEdge = StaticObject(world, (mapSize[0]-25,0), (25, mapSize[1]))
+	roof = StaticObject(world, (0,0), (mapSize[0], 25))
+
 
 
 # Cursor
@@ -451,3 +458,23 @@ class StaticObject(pygame.sprite.Sprite): #used for world boundaries and the lik
 	def update(self,seconds):
 
 		self.rect.topleft = rect(self.leftpoint)
+
+# player Spawn
+# --------------------------------------------------------------------------------------------------
+class PlayerSpawn(pygame.sprite.Sprite):
+	def __init__(self,pos):
+
+		for item in playerSpawnGroup :
+			item.kill()
+
+		self.groups = allGroup, terrainGroup, playerSpawnGroup
+		pygame.sprite.Sprite.__init__(self, self.groups)
+		self.pos = pos
+
+		self.image = pygame.image.load('images/editor/player_spawn.png').convert()
+		self.image.set_colorkey(WHITE)
+		self.rect = self.image.get_rect()
+		self.rect.center = rect(pos)
+
+	def update(self, seconds):
+		self.rect.center = rect(self.pos)

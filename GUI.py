@@ -104,6 +104,8 @@ class EditorGUI(object): #contains value boxes
 
 		elif self.item.__name__ == 'Crate' :
 			tempItem = Crate(self.world, unrect(buildRect.center))
+		elif self.item.__name__ == 'PlayerSpawn' :
+			tempItem = PlayerSpawn(unrect(buildRect.center))
 
 
 		self.itemList.append((tempItem,self.item.__name__, tempItem.pos, values))
@@ -155,6 +157,8 @@ class EditorGUI(object): #contains value boxes
 
 		elif self.item.__name__ == 'Crate' :
 			tempItem = Crate(self.world, unrect(mousePos))
+		elif self.item.__name__ == 'PlayerSpawn':
+			tempItem = PlayerSpawn(unrect(mousePos))
 
 
 		self.itemList.append((tempItem,self.item.__name__, tempItem.pos, values))

@@ -54,16 +54,10 @@ def main(mapFilepath):
 	_world = world(gravity=(0,-10),doSleep=True)
 
 	# And a static body to hold the ground shape
-	ground= StaticObject(_world, (0, g.BIGMAP_HEIGHT - 20), (g.BIGMAP_WIDTH,15))
-	leftEdge = StaticObject(_world, (0,0), (20, g.BIGMAP_HEIGHT))
-	rightEdge = StaticObject(_world, (g.BIGMAP_WIDTH,0), (20, g.BIGMAP_HEIGHT))
-	roof = StaticObject(_world, (0,0), (g.BIGMAP_WIDTH, 20))
-
+	ground= StaticObject(_world, (0, g.BIGMAP_HEIGHT - 25), (g.BIGMAP_WIDTH,25))
+	createEdges(_world, (g.BIGMAP_WIDTH,g.BIGMAP_HEIGHT))
+	
 	# add a crate
-	editor.load(mapFilepath, _world, ground)
-
-	crate = Crate( _world,(400,400))
-	crate2 = Crate( _world,(200,400), (100,20))
 	# for i in xrange(200):
 	# 	Crate(_world, (rd.randint(0, 700), rd.randint(0, 400)))
 	# ledge = Ledge(_world, ground, leftpoint = (800,600), width = 400)
@@ -74,8 +68,13 @@ def main(mapFilepath):
 	# --------------------------------------------------------
 	# --- Game setup -----------------------------------------
 	mainLoop = True
-	player = Player(_world, (100,100))
-	vampire1 = Vampire(_world, (800, 400), target = player)
+
+	editor.load(mapFilepath, _world, ground)
+	player = None
+	for item in playerSpawnGroup :
+		player = Player(_world, item.pos)
+		item.kill()
+	# vampire1 = Vampire(_world, (800, 400), target = player)
 	# zombie = Zombie(_world, (800,400), target =player)
 	Zombie(_world, (900,300), target =player)
 	Zombie(_world, (1100,400), target =player)
@@ -240,5 +239,5 @@ def main(mapFilepath):
 		allGroup.draw(screen)
 		pygame.display.flip()
 
-editor.editor(FILEPATH)
+editor.editor(FILEPATH, new = False)
 main(FILEPATH)

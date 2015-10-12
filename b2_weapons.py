@@ -660,7 +660,7 @@ class Projectile_MiniBouncingBall(Projectile):
 class MeleeHit(Weapon):
 	name = 'Melee'
 
-	def __init__(self, owner, power = 150, weapon_range = 100, cooldown = 3.0):
+	def __init__(self, owner, power = 2000, weapon_range = 100, cooldown = 3.0):
 		Weapon.__init__(self,owner, weapon_range)
 		self.power = power
 

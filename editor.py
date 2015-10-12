@@ -6,26 +6,6 @@ import GUI
 import shelve
 
 
-# class Map(object)
-# 	def __init__(self, size, file):
-# 		self.grid = [[0 for i in xrange(size[0])] for i in xrange(size[1])
-# 		#open file and load contents into grid
-
-# 	def draw(self):
-# 		for i in xrange(self.size[0]):
-# 			ID_Dictionnary[self.grid[]]
-
-# class Locals(object):
-
-#class GUI(object):
-
-class testItem(pygame.sprite.Sprite):
-	def __init__(self, topleft, size):
-		pygame.sprite.Sprite.__init__(self, allGroup)
-		
-		self.image = pygame.Surface(size)
-		self.image.fill(BLACK)
-		self.rect = pygame.Rect(topleft, size)
 
 
 
@@ -97,7 +77,7 @@ class Blueprint(pygame.sprite.Sprite):
 
 
 
-def editor(mapFilepath):
+def editor(mapFilepath, new = False):
 	# Pygame set up
 	# -----------------------------------------------------------
 	screen=pygame.display.set_mode((SCREEN_WIDTH,SCREEN_HEIGHT), 0, 32)
@@ -113,11 +93,8 @@ def editor(mapFilepath):
 	_world = world(gravity=(0,0),doSleep=True)
 
 	# edges
-	ground= StaticObject(_world, (0, g.BIGMAP_HEIGHT - 20), (g.BIGMAP_WIDTH,15))
-	leftEdge = StaticObject(_world, (0,0), (20, g.BIGMAP_HEIGHT))
-	rightEdge = StaticObject(_world, (g.BIGMAP_WIDTH,0), (20, g.BIGMAP_HEIGHT))
-	roof = StaticObject(_world, (0,0), (g.BIGMAP_WIDTH, 20))
-
+	ground= StaticObject(_world, (0, g.BIGMAP_HEIGHT - 25), (g.BIGMAP_WIDTH,25))
+	createEdges(_world, (g.BIGMAP_WIDTH,g.BIGMAP_HEIGHT))
 	# ------- create background ---------------- subsurface of bigmap (what will be on the screen)
 	background = pygame.Surface(screen.get_size()) #surface the size of the screen
 	backgroundRect = background.get_rect() #create rectangle the size of background/the screen
@@ -134,7 +111,7 @@ def editor(mapFilepath):
 	modeList = [freeBuild, building, deleteMode]
 	buildRect = BuildRect()
 	
-	itemList = [Ledge, Doodad, Crate]
+	itemList = [Ledge, Doodad, Crate, PlayerSpawn]
 	itemList_index = 0
 	gui = GUI.EditorGUI(world = _world, ground = ground, item = Ledge)
 	scrollx = 0
@@ -143,8 +120,8 @@ def editor(mapFilepath):
 	infoBox = GUI.TextBox(pos = (0, SCREEN_HEIGHT -20), width = 300, height = 20, fontSize = 16)
 	infoString = ''
 	blueprint = Blueprint((1,1))
-
-	load(mapFilepath, _world, ground, gui)
+	if not new :
+		load(mapFilepath, _world, ground, gui)
 
 
 
@@ -284,6 +261,8 @@ def editor(mapFilepath):
 		_world.DestroyBody(body)
 		temp.remove(body)
 
+
+
 def save(filepath, itemList):
 	f = shelve.DbfilenameShelf(filepath, flag='c', protocol=None, writeback=False)
 	f['itemNumber'] = len(itemList)
@@ -314,6 +293,8 @@ def load(filepath, world, ground, editorGui = None):
 			temp =Doodad(world, ground, pos, width = values[0], height = values[1], color = values[2], density = values[3])
 		elif name == 'Crate':
 			temp = Crate(world, pos)
+		elif name == 'PlayerSpawn':
+			temp = PlayerSpawn(pos)
 		if editorGui :
 			editorGui.itemList.append((temp, name, pos, values))
 	
