@@ -39,6 +39,8 @@ def main(mapFilepath):
 	clock=pygame.time.Clock()
 	rd.seed()
 
+	terrainGroup.empty()
+
 	bigmap = pygame.Surface((g.BIGMAP_WIDTH+SCREEN_WIDTH, g.BIGMAP_HEIGHT+SCREEN_HEIGHT))
 	bigmap.fill(WHITE)
 		# ------- create background ---------------- subsurface of bigmap (what will be on the screen)
@@ -69,11 +71,12 @@ def main(mapFilepath):
 	# --- Game setup -----------------------------------------
 	mainLoop = True
 
+	
 	spawnPos = editor.load(mapFilepath, _world, ground)
 	player = Player(_world, spawnPos)
-	
-	# vampire1 = Vampire(_world, (800, 400), target = player)
-	# zombie = Zombie(_world, (800,400), target =player)
+
+	vampire1 = Vampire(_world, (800, 400), target = player)
+	zombie = Zombie(_world, (800,400), target =player)
 	Zombie(_world, (900,300), target =player)
 	Zombie(_world, (1100,400), target =player)
 	Zombie(_world, (1000,200), target =player)
@@ -237,5 +240,5 @@ def main(mapFilepath):
 		allGroup.draw(screen)
 		pygame.display.flip()
 
-editor.editor(FILEPATH, new = True)
+editor.editor(FILEPATH, new = False)
 main(FILEPATH)

@@ -163,10 +163,10 @@ def editor(mapFilepath, new = False):
 				if event.button == 1:
 					g.LEFT_CLICK = False
 					if freeBuild :
-						gui.freeBuild(buildRect)
+						gui.build(buildRect =buildRect)
 						buildSprite.kill()
 					if building :
-						gui.build(cursor.rect.topleft)
+						gui.build(mousePos = cursor.rect.topleft)
 					elif deleteMode:
 						if hovered:
 							if terrainGroup in hovered[0].groups:

@@ -46,6 +46,7 @@ unitGroup = pygame.sprite.Group()
 playerGroup = pygame.sprite.Group()
 guiGroup = pygame.sprite.Group()
 playerSpawnGroup = pygame.sprite.Group()
+spawnGroup = pygame.sprite.Group()
 
 
 
@@ -114,6 +115,14 @@ def findColor(temp):
 		return BLUE
 	elif temp == 4:
 		return GREEN
+
+def findClass(temp):
+	if temp == 1:
+		return Zombie
+	elif temp == 2:
+		return Vampire
+	elif temp == 3:
+		return Skull
 
 def setColorkey(image):
 

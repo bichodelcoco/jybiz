@@ -362,8 +362,8 @@ class GrapplingHook(Weapon):
 		self.garbage_bin = []
 
 	def activate(self, mousePos):
-		self.hook = Hook(self.owner, mousePos, self.pull_power)
-		self.garbage_bin.append(self.hook)
+		hook = Hook(self.owner, mousePos, self.pull_power)
+		self.garbage_bin.append(hook)
 
 	def deactivate(self, mousePos):
 		for hook in self.garbage_bin :
@@ -407,6 +407,10 @@ class Hook(pygame.sprite.Sprite):
 			self.owner.fixture.body.ApplyForce(pygameVec_to_box2dVec((self.pull_vec[0]*self.pull_power, self.pull_vec[1]*self.pull_power)), self.owner.fixture.body.worldCenter, wake = True)
 
 		self.rect.center = rect(self.pos)
+
+	def kill(self):
+		self.latched = False
+		pygame.sprite.Sprite.kill(self)
 
 
 # Bouncing Ball

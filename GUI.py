@@ -1,5 +1,6 @@
 import pygame
 from b2_classes import *
+from b2_terrain import *
 import textrect
 
 
@@ -55,71 +56,80 @@ class EditorGUI(object): #contains value boxes
 				self.slots[i].update()
 		self.displayedItem = self.item
 
-	def freeBuild(self, buildRect):
-		values = [0 for i in xrange(10)]
-		values[0] = buildRect.width
-		values[1] = buildRect.height
-		skip = False
+	# def freeBuild(self, buildRect):
+	# 	values = [0 for i in xrange(10)]
 		
-		if self.item.__name__ == 'Ledge':
-			for i in xrange(2,5):
-				temp = self.slots[i].output()
-				if temp:
-					if i == 2:
-						if temp == 1:
-							values[i] = BLACK
-						elif temp == 2:
-							values[i] = RED
-						elif temp == 3:
-							values[i] = BLUE
-					else :
-						values[i] = temp
-				#defaulft values if temp( output ) = 0
-				elif i == 0:
-					values[i] = 300
-				elif i == 1:
-					values[i] = 20
-				elif i == 2:
-					values[i]= BLACK
-				elif i==3 or i ==4:
-					values[i]= 0
-			tempItem = Ledge(self.world, self.ground, unrect(buildRect.center), width = values[0], height = values[1], color = values[2], allowedAngle = (-values[3],values[4]))
+	# 	skip = False
+		
+	# 	if self.item.__name__ == 'Ledge':
+	# 		for i in xrange(2,5):
+	# 			temp = self.slots[i].output()
+	# 			if temp:
+	# 				if i == 2:
+	# 					if temp == 1:
+	# 						values[i] = BLACK
+	# 					elif temp == 2:
+	# 						values[i] = RED
+	# 					elif temp == 3:
+	# 						values[i] = BLUE
+	# 				else :
+	# 					values[i] = temp
+	# 			#defaulft values if temp( output ) = 0
+	# 			elif i == 0:
+	# 				values[i] = 300
+	# 			elif i == 1:
+	# 				values[i] = 20
+	# 			elif i == 2:
+	# 				values[i]= BLACK
+	# 			elif i==3 or i ==4:
+	# 				values[i]= 0
+	# 		tempItem = Ledge(self.world, self.ground, unrect(buildRect.center), width = values[0], height = values[1], color = values[2], allowedAngle = (-values[3],values[4]))
 
 
-		elif self.item.__name__ == 'Doodad':
-			for i in xrange(2,4):
-				temp = self.slots[i].output()
-				if temp:
-					if i == 2:
-						values[i] = findColor(temp)
-					else :
-						values[i] = temp
-				elif i == 0:
-					values[i] = 100
-				elif i == 1:
-					values[i] = 100
-				elif i == 2:
-					values[i]= BROWN
-				elif i == 3:
-					values[i]= 1
-			tempItem = Doodad(self.world, self.ground, unrect(buildRect.center), width = values[0], height = values[1], color = values[2], density = values[3])
+	# 	elif self.item.__name__ == 'Doodad':
+	# 		for i in xrange(2,4):
+	# 			temp = self.slots[i].output()
+	# 			if temp:
+	# 				if i == 2:
+	# 					values[i] = findColor(temp)
+	# 				else :
+	# 					values[i] = temp
+	# 			elif i == 0:
+	# 				values[i] = 100
+	# 			elif i == 1:
+	# 				values[i] = 100
+	# 			elif i == 2:
+	# 				values[i]= BROWN
+	# 			elif i == 3:
+	# 				values[i]= 1
+	# 		tempItem = Doodad(self.world, self.ground, unrect(buildRect.center), width = values[0], height = values[1], color = values[2], density = values[3])
 
-		elif self.item.__name__ == 'Crate' :
-			tempItem = Crate(self.world, unrect(buildRect.center))
-		elif self.item.__name__ == 'PlayerSpawn' :
-			skip = True
-			for item in playerSpawnGroup :
-				item.kill()
-			self.spawn = PlayerSpawn(unrect(buildRect.center))
+	# 	elif self.item.__name__ == 'Crate' :
+	# 		tempItem = Crate(self.world, unrect(buildRect.center))
+	# 	elif self.item.__name__ == 'PlayerSpawn' :
+	# 		skip = True
+	# 		for item in playerSpawnGroup :
+	# 			item.kill()
+	# 		self.spawn = PlayerSpawn(unrect(buildRect.center))
 
-		if not skip :
-			self.itemList.append((tempItem,self.item.__name__, tempItem.pos, values))
+	# 	if not skip :
+	# 		self.itemList.append((tempItem,self.item.__name__, tempItem.pos, values))
 
-	def build(self, mousePos):
+	def build(self, mousePos = None, buildRect= None):
 		values = [0 for i in xrange(10)]
+		if buildRect :
+			start = 2
+			values[0] = buildRect.width
+			values[1] = buildRect.height
+			pos = unrect(buildRect.center)
+		else : 
+			start = 0
+			pos = unrect(mousePos)
+
 		skip = False
 		if self.item.__name__ == 'Ledge':
-			for i in xrange(5):
+			
+			for i in xrange(start,5):
 				temp = self.slots[i].output()
 				if temp:
 					if i == 2:
@@ -140,11 +150,11 @@ class EditorGUI(object): #contains value boxes
 					values[i]= BLACK
 				elif i==3 or i ==4:
 					values[i]= 0
-			tempItem = Ledge(self.world, self.ground, unrect(mousePos), width = values[0], height = values[1], color = values[2], allowedAngle = (-values[3],values[4]))
+			tempItem = Ledge(self.world, self.ground, pos, width = values[0], height = values[1], color = values[2], allowedAngle = (-values[3],values[4]))
 
 
 		elif self.item.__name__ == 'Doodad':
-			for i in xrange(4):
+			for i in xrange(start,4):
 				temp = self.slots[i].output()
 				if temp:
 					if i == 2:
@@ -159,15 +169,15 @@ class EditorGUI(object): #contains value boxes
 					values[i]= BROWN
 				elif i == 3:
 					values[i]= 1
-			tempItem = Doodad(self.world, self.ground, unrect(mousePos), width = values[0], height = values[1], color = values[2], density = values[3])
+			tempItem = Doodad(self.world, self.ground, pos, width = values[0], height = values[1], color = values[2], density = values[3])
 
 		elif self.item.__name__ == 'Crate' :
-			tempItem = Crate(self.world, unrect(mousePos))
+			tempItem = Crate(self.world, pos)
 		elif self.item.__name__ == 'PlayerSpawn':
 			skip = True
 			for item in playerSpawnGroup :
 				item.kill()
-			self.spawn = PlayerSpawn(unrect(mousePos))
+			self.spawn = PlayerSpawn(pos)
 
 		if not skip :
 			self.itemList.append((tempItem,self.item.__name__, tempItem.pos, values))
