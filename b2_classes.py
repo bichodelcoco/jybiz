@@ -17,7 +17,7 @@ from Box2D.b2 import *
 PPM= 20.0 # pixels per meter
 TARGET_FPS=60
 TIME_STEP=1.0/TARGET_FPS
-SCREEN_WIDTH, SCREEN_HEIGHT=1024,760
+SCREEN_WIDTH, SCREEN_HEIGHT=800,600
 
 FILEPATH = 'maps/test1.db'
 
@@ -248,7 +248,7 @@ class GameObject(pygame.sprite.Sprite):
 			self.rect.center = rect(vec_to_coordinates(self.fixture.body.position))
 		else :
 			self.pos = vec_to_coordinates(self.fixture.body.position)
-		
+
 
 		self.rect.center = rect(self.pos)
 
@@ -258,7 +258,7 @@ class GameObject(pygame.sprite.Sprite):
 		if self.hitpoints < 0 :
 			self.die()
 
-	
+
 
 
 

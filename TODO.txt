@@ -35,6 +35,7 @@ FAIT UN PEU DU 7. et 8. QUAND TA LA NON FLEMME PCQ C CHIANT
 6. tester et raffiner
 	le jump( priorité, il est trop petit)
 	toutes les armes (mais attendre d'avoir des meilleurs ennemis)
+	NB : pour le retournement est ce que ça serait pas bien de retourner aussi le mec quand il est soumis juste à la gravité ? (<=> en chute libre), l'intéret c'est que quand juste tu tombes (meme de haut) tu retombe sur tes pattes.
 
 7. éditer les images de zombie, golem ( si on les utilise), player pour pouvoir test les ennemis et le gameplay
 	voir vampire pour les edit qu'il faut faire
