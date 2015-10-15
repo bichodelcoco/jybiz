@@ -19,7 +19,7 @@ TARGET_FPS=60
 TIME_STEP=1.0/TARGET_FPS
 SCREEN_WIDTH, SCREEN_HEIGHT=800,600
 
-FILEPATH = 'maps/test1.db'
+FILEPATH = 'maps/zob.db' #qd nouveau aller dans main (editor, new = True)
 
 
 

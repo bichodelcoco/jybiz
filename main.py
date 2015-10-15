@@ -58,7 +58,7 @@ def main(mapFilepath):
 	# And a static body to hold the ground shape
 	ground= StaticObject(_world, (0, g.BIGMAP_HEIGHT - 25), (g.BIGMAP_WIDTH,25))
 	createEdges(_world, (g.BIGMAP_WIDTH,g.BIGMAP_HEIGHT))
-	
+
 	# add a crate
 	# for i in xrange(200):
 	# 	Crate(_world, (rd.randint(0, 700), rd.randint(0, 400)))
@@ -71,7 +71,7 @@ def main(mapFilepath):
 	# --- Game setup -----------------------------------------
 	mainLoop = True
 
-	
+
 	spawnPos = editor.load(mapFilepath, _world, ground)
 	player = Player(_world, spawnPos)
 
@@ -240,5 +240,5 @@ def main(mapFilepath):
 		allGroup.draw(screen)
 		pygame.display.flip()
 
-editor.editor(FILEPATH, new = False)
+editor.editor(FILEPATH, new = True)
 main(FILEPATH)
