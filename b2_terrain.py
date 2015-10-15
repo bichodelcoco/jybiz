@@ -13,13 +13,14 @@ class MonsterSpawn(pygame.sprite.Sprite):
 		self.duration = duration
 		self.elapsedTime = 0.0
 		self.groups = allGroup, spawnGroup
+		self.online = online
 
 		pygame.sprite.Sprite.__init__(self, self.groups)
 	
 			
 
 	def update(self, seconds):
-		if online :
+		if self.online :
 			self.elapsedTime += seconds
 			if self.elapsedTime >= self.monster_cooldown:
 				self.spawn()
@@ -51,7 +52,7 @@ class MonsterSpawn(pygame.sprite.Sprite):
 
 
 	def turnOn(self):
-		online = True
+		self.online = True
 	def turnOff(self):
-		online = False
+		self.online = False
 
